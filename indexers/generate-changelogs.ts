@@ -148,16 +148,20 @@ async function getPaperCommits(version: string): Promise<Commit[]> {
 }
 
 // Fetch Minecraft version info from Mojang's launcher manifest
-async function getMinecraftVersionInfo(version: string): Promise<{ releaseTime: string; type: string } | null> {
+async function getMinecraftVersionInfo(
+  version: string
+): Promise<{ releaseTime: string; type: string } | null> {
   try {
     const manifestResponse = await fetch(
       "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json"
     );
     if (!manifestResponse.ok) return null;
-    
+
     const manifest = await manifestResponse.json();
-    const versionInfo = manifest.versions.find((v: { id: string }) => v.id === version);
-    
+    const versionInfo = manifest.versions.find(
+      (v: { id: string }) => v.id === version
+    );
+
     if (versionInfo) {
       return {
         releaseTime: versionInfo.releaseTime,
@@ -174,6 +178,69 @@ async function getMinecraftVersionInfo(version: string): Promise<{ releaseTime: 
 function getMinecraftChangelogUrl(version: string): string {
   const urlVersion = version.replace(/\./g, "-");
   return `https://www.minecraft.net/en-us/article/minecraft-java-edition-${urlVersion}`;
+}
+
+// Fetch and extract text content from Minecraft.net changelog page
+async function fetchMinecraftChangelogContent(version: string): Promise<string | null> {
+  try {
+    const url = getMinecraftChangelogUrl(version);
+    console.log(`  Fetching: ${url}`);
+    
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+      },
+    });
+
+    if (!response.ok) {
+      console.log(`  HTTP ${response.status}`);
+      return null;
+    }
+
+    const html = await response.text();
+    
+    // Extract text content from the HTML
+    let text = html
+      // Remove scripts and styles
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      // Remove HTML comments
+      .replace(/<!--[\s\S]*?-->/g, "")
+      // Convert common block elements to newlines
+      .replace(/<\/?(p|div|h[1-6]|li|br|tr)[^>]*>/gi, "\n")
+      // Remove remaining HTML tags
+      .replace(/<[^>]+>/g, " ")
+      // Decode HTML entities
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // Clean up whitespace
+      .replace(/\s+/g, " ")
+      .replace(/\n\s+/g, "\n")
+      .trim();
+
+    // Try to find the changelog section
+    const changelogMatch = text.match(/(Technical Changes|Changes in|New Features|Bug Fixes|Experimental|Fixed bugs|CHANGES|FEATURES)[\s\S]{100,10000}/i);
+    if (changelogMatch) {
+      text = changelogMatch[0];
+    }
+
+    // Limit length
+    if (text.length > 10000) {
+      text = text.slice(0, 10000);
+    }
+
+    console.log(`  Extracted ${text.length} chars`);
+    return text.length > 200 ? text : null;
+  } catch (error) {
+    console.error(`  Fetch error:`, error);
+    return null;
+  }
 }
 
 // Generate changelog using GPT
@@ -310,8 +377,7 @@ async function storeChangelog(changelog: Changelog): Promise<void> {
 }
 
 // Generate changelog for Vanilla (Minecraft)
-// Note: We don't have direct access to vanilla changelog content, so we create
-// a minimal entry that links to the official changelog
+// Fetches the official changelog page and uses GPT to extract developer-relevant info
 async function generateVanillaChangelog(
   version: string,
   previousVersion?: string
@@ -321,13 +387,30 @@ async function generateVanillaChangelog(
   const versionInfo = await getMinecraftVersionInfo(version);
   console.log(`  Version info: ${versionInfo ? "found" : "not found"}`);
 
-  // For vanilla, we create a reference entry since we can't scrape minecraft.net
-  // The official changelog URL is the primary resource
+  // Try to fetch the official changelog content
+  const pageContent = await fetchMinecraftChangelogContent(version);
+  
+  if (pageContent) {
+    console.log(`  Page content found, generating with GPT...`);
+    // Use GPT to extract developer-relevant information
+    return generateChangelog(
+      version,
+      "vanilla",
+      [], // No commits for vanilla
+      pageContent, // Use page content as "official changelog"
+      previousVersion
+    );
+  }
+
+  // Fallback if we can't fetch the page
+  console.log(`  No page content, creating minimal entry`);
   return {
     version,
     project: "vanilla",
-    summary: versionInfo 
-      ? `Minecraft ${version} (${versionInfo.type}) released on ${new Date(versionInfo.releaseTime).toLocaleDateString()}.`
+    summary: versionInfo
+      ? `Minecraft ${version} (${versionInfo.type}) released on ${new Date(
+          versionInfo.releaseTime
+        ).toLocaleDateString()}.`
       : `Minecraft ${version} release.`,
     breaking_changes: [],
     new_features: [],
@@ -339,7 +422,6 @@ async function generateVanillaChangelog(
     official_changelog_url: getMinecraftChangelogUrl(version),
     generated_at: new Date().toISOString(),
   };
-
 }
 
 // Generate changelog for Paper
