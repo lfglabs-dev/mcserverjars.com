@@ -9,6 +9,11 @@ import { Dropdown, MobileDropdown } from "./Dropdown";
 
 const developerMenuItems = [
   {
+    label: "Changelogs",
+    href: "/developers/changelogs",
+    description: "Developer-focused version changelogs",
+  },
+  {
     label: "NMS Mappings",
     href: "/developers/nms",
     description: "Minecraft → CraftBukkit package versions",

@@ -126,6 +126,53 @@ const endpoints: Endpoint[] = [
   "craftbukkit_package": "org.bukkit.craftbukkit.v1_21_R3"
 }`,
   },
+  {
+    method: "GET",
+    path: "/v1/changelogs",
+    description: "List all developer-focused changelogs",
+    example: `${API_BASE}/v1/changelogs?project=paper`,
+    response: `{
+  "changelogs": [
+    {
+      "version": "1.21.11",
+      "project": "paper",
+      "summary": "...",
+      "breaking_changes": [...],
+      "api_changes": [...]
+    }
+  ]
+}`,
+  },
+  {
+    method: "GET",
+    path: "/v1/changelogs/:version",
+    description: "Get changelogs for a specific version",
+    example: `${API_BASE}/v1/changelogs/1.21.11`,
+    response: `{
+  "version": "1.21.11",
+  "changelogs": [
+    { "project": "vanilla", ... },
+    { "project": "paper", ... },
+    { "project": "spigot", ... }
+  ]
+}`,
+  },
+  {
+    method: "GET",
+    path: "/v1/changelogs/range",
+    description: "Get aggregated changelogs between versions (for LLMs)",
+    example: `${API_BASE}/v1/changelogs/range?from=1.21.9&to=1.21.11&project=paper`,
+    response: `{
+  "from_version": "1.21.9",
+  "to_version": "1.21.11",
+  "by_project": {
+    "paper": {
+      "breaking_changes": ["[1.21.10] ...", "[1.21.11] ..."],
+      "api_changes": [...]
+    }
+  }
+}`,
+  },
 ];
 
 const features = [
