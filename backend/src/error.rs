@@ -8,6 +8,7 @@ use serde_json::json;
 #[derive(Debug)]
 pub enum AppError {
     NotFound,
+    BadRequest(String),
     Database(sqlx::Error),
     Internal(String),
 }
@@ -16,6 +17,7 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
             AppError::NotFound => (StatusCode::NOT_FOUND, "Resource not found".to_string()),
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::Database(e) => {
                 tracing::error!("Database error: {}", e);
                 (
@@ -44,4 +46,3 @@ impl From<anyhow::Error> for AppError {
         AppError::Internal(e.to_string())
     }
 }
-

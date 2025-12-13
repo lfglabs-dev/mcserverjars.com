@@ -1,8 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct ProjectResponse {
     pub id: Uuid,
     pub slug: String,
@@ -14,7 +15,7 @@ pub struct ProjectResponse {
     pub display_order: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct ProjectDetailResponse {
     pub id: Uuid,
     pub slug: String,
@@ -23,18 +24,18 @@ pub struct ProjectDetailResponse {
     pub website_url: Option<String>,
     pub source_url: Option<String>,
     pub category: String,
-    pub version_count: i64,
-    pub build_count: i64,
+    pub version_count: Option<i64>,
+    pub build_count: Option<i64>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct VersionResponse {
     pub version: String,
     pub version_type: String,
     pub release_date: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct BuildResponse {
     pub build_number: Option<i32>,
     pub version_string: Option<String>,
@@ -46,4 +47,3 @@ pub struct BuildResponse {
     pub is_latest: Option<bool>,
     pub release_date: Option<DateTime<Utc>>,
 }
-

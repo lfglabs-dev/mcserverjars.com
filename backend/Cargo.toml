@@ -9,6 +9,7 @@ authors = ["Thomas Marchand"]
 # Web framework
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
 
@@ -34,6 +35,9 @@ dotenvy = "0.15"
 # For BuildTools
 sha2 = "0.10"
 hex = "0.4"
+
+# Pin home to avoid Rust 1.88 requirement
+home = "=0.5.9"
 
 [dev-dependencies]
 tokio-test = "0.4"
