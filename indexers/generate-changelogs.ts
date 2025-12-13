@@ -309,62 +309,94 @@ If a category has no items, use an empty array.`;
 
   if (officialChangelog) {
     userPrompt += `OFFICIAL MINECRAFT CHANGELOG:\n${officialChangelog}\n\n`;
-    
+
     // Pre-extract key resource pack changes for Vanilla changelogs
     if (project === "vanilla") {
       const preExtracted: string[] = [];
-      
+
       // Extract resource pack version
-      const packVersionMatch = officialChangelog.match(/Resource Pack version is now (\d+)/i);
+      const packVersionMatch = officialChangelog.match(
+        /Resource Pack version is now (\d+)/i
+      );
       if (packVersionMatch) {
-        preExtracted.push(`Resource Pack version is now ${packVersionMatch[1]}`);
+        preExtracted.push(
+          `Resource Pack version is now ${packVersionMatch[1]}`
+        );
       }
-      
+
       // Extract data pack version
-      const dataVersionMatch = officialChangelog.match(/Data Pack version is now (\d+)/i);
+      const dataVersionMatch = officialChangelog.match(
+        /Data Pack version is now (\d+)/i
+      );
       if (dataVersionMatch) {
         preExtracted.push(`Data Pack version is now ${dataVersionMatch[1]}`);
       }
-      
+
       // Extract equipment directory move
       if (officialChangelog.includes("equipment directory has been moved")) {
-        preExtracted.push("equipment directory has been moved one level up: models/equipment/ becomes equipment/");
+        preExtracted.push(
+          "equipment directory has been moved one level up: models/equipment/ becomes equipment/"
+        );
       }
-      
+
       // Extract elytra rename
-      if (officialChangelog.includes("broken_elytra") || officialChangelog.includes("elytra_broken")) {
-        preExtracted.push("broken_elytra model and texture has been renamed to elytra_broken");
+      if (
+        officialChangelog.includes("broken_elytra") ||
+        officialChangelog.includes("elytra_broken")
+      ) {
+        preExtracted.push(
+          "broken_elytra model and texture has been renamed to elytra_broken"
+        );
       }
-      
+
       // Extract overrides removal
       if (officialChangelog.includes("overrides section has been removed")) {
-        preExtracted.push("The overrides section has been removed from existing block models");
+        preExtracted.push(
+          "The overrides section has been removed from existing block models"
+        );
       }
-      
+
       // Extract hardcoded paths removal
       if (officialChangelog.includes("hardcoded paths")) {
-        preExtracted.push("There are no longer any hardcoded paths in the models directory - models will only be used if referenced by items or blockstates");
+        preExtracted.push(
+          "There are no longer any hardcoded paths in the models directory - models will only be used if referenced by items or blockstates"
+        );
       }
-      
+
       // Extract models/item changes
-      if (officialChangelog.includes("Models in models/item") && officialChangelog.includes("have been removed")) {
-        preExtracted.push("Models in models/item that only redirect to a block model have been removed - item models now refer to models/block directly");
+      if (
+        officialChangelog.includes("Models in models/item") &&
+        officialChangelog.includes("have been removed")
+      ) {
+        preExtracted.push(
+          "Models in models/item that only redirect to a block model have been removed - item models now refer to models/block directly"
+        );
       }
-      
+
       // Extract item model format change
-      if (officialChangelog.includes("items/bar.json") || officialChangelog.includes("/assets/[namespace]/items/")) {
-        preExtracted.push("New item model format: item models are now stored in /assets/[namespace]/items/[path].json instead of models/item/");
+      if (
+        officialChangelog.includes("items/bar.json") ||
+        officialChangelog.includes("/assets/[namespace]/items/")
+      ) {
+        preExtracted.push(
+          "New item model format: item models are now stored in /assets/[namespace]/items/[path].json instead of models/item/"
+        );
       }
-      
+
       // Extract CustomModelData changes
-      if (officialChangelog.includes("custom_model_data") && officialChangelog.includes("floats")) {
-        preExtracted.push("CustomModelData component expanded: now has floats[], flags[], strings[], colors[] fields instead of single int");
+      if (
+        officialChangelog.includes("custom_model_data") &&
+        officialChangelog.includes("floats")
+      ) {
+        preExtracted.push(
+          "CustomModelData component expanded: now has floats[], flags[], strings[], colors[] fields instead of single int"
+        );
       }
-      
+
       if (preExtracted.length > 0) {
         console.log(`  Pre-extracted ${preExtracted.length} resource changes`);
         userPrompt += `PRE-EXTRACTED RESOURCE FORMAT CHANGES (include these EXACTLY in resource_format_changes):
-${preExtracted.map(p => `- ${p}`).join("\n")}
+${preExtracted.map((p) => `- ${p}`).join("\n")}
 
 Additionally, look for any other resource/data pack changes not listed above.\n\n`;
       } else {
