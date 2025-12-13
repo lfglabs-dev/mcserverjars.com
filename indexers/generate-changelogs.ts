@@ -54,9 +54,13 @@ interface Changelog {
 }
 
 // Fetch Spigot version info
-async function getSpigotVersionInfo(version: string): Promise<SpigotVersionInfo | null> {
+async function getSpigotVersionInfo(
+  version: string
+): Promise<SpigotVersionInfo | null> {
   try {
-    const response = await fetch(`https://hub.spigotmc.org/versions/${version}.json`);
+    const response = await fetch(
+      `https://hub.spigotmc.org/versions/${version}.json`
+    );
     if (!response.ok) return null;
     return response.json();
   } catch {
@@ -75,11 +79,19 @@ async function getSpigotCommits(
     const response = await fetch(url);
     if (!response.ok) return [];
     const data = await response.json();
-    return (data.values || []).map((c: { message: string; author?: { name: string }; authorTimestamp?: number }) => ({
-      message: c.message,
-      author: c.author?.name,
-      date: c.authorTimestamp ? new Date(c.authorTimestamp).toISOString() : undefined,
-    }));
+    return (data.values || []).map(
+      (c: {
+        message: string;
+        author?: { name: string };
+        authorTimestamp?: number;
+      }) => ({
+        message: c.message,
+        author: c.author?.name,
+        date: c.authorTimestamp
+          ? new Date(c.authorTimestamp).toISOString()
+          : undefined,
+      })
+    );
   } catch {
     return [];
   }
@@ -101,33 +113,33 @@ async function getPaperCommits(version: string): Promise<Commit[]> {
     );
     if (!response.ok) return [];
     const commits = await response.json();
-    
+
     // Filter commits related to this version
     const versionCommits: Commit[] = [];
     let foundVersion = false;
     let passedVersion = false;
-    
+
     for (const commit of commits) {
       const msg = commit.commit.message;
       // Check if this commit mentions the version
       if (msg.includes(version) || msg.includes(`Updated for ${version}`)) {
         foundVersion = true;
       }
-      
+
       if (foundVersion && !passedVersion) {
         versionCommits.push({
           message: msg,
           author: commit.commit.author?.name,
           date: commit.commit.author?.date,
         });
-        
+
         // Stop when we hit the previous version update
         if (versionCommits.length > 1 && msg.includes("Updated for 1.")) {
           passedVersion = true;
         }
       }
     }
-    
+
     return versionCommits.slice(0, 50); // Limit to 50 commits
   } catch (error) {
     console.error("Error fetching Paper commits:", error);
@@ -135,43 +147,33 @@ async function getPaperCommits(version: string): Promise<Commit[]> {
   }
 }
 
-// Fetch official Minecraft changelog from minecraft.net
-async function getMinecraftChangelog(version: string): Promise<string | null> {
+// Fetch Minecraft version info from Mojang's launcher manifest
+async function getMinecraftVersionInfo(version: string): Promise<{ releaseTime: string; type: string } | null> {
   try {
-    // Format version for URL (1.21.11 -> minecraft-java-edition-1-21-11)
-    const urlVersion = version.replace(/\./g, "-");
-    const url = `https://www.minecraft.net/en-us/article/minecraft-java-edition-${urlVersion}`;
+    const manifestResponse = await fetch(
+      "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json"
+    );
+    if (!manifestResponse.ok) return null;
     
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        Accept: "text/html",
-      },
-    });
+    const manifest = await manifestResponse.json();
+    const versionInfo = manifest.versions.find((v: { id: string }) => v.id === version);
     
-    if (!response.ok) return null;
-    
-    const html = await response.text();
-    
-    // Extract the article content (basic extraction)
-    // The actual content is usually in a specific div
-    const contentMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
-    if (contentMatch) {
-      // Strip HTML tags and clean up
-      let text = contentMatch[1]
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-      
-      return text.slice(0, 10000); // Limit length
+    if (versionInfo) {
+      return {
+        releaseTime: versionInfo.releaseTime,
+        type: versionInfo.type,
+      };
     }
-    
     return null;
   } catch {
     return null;
   }
+}
+
+// Get the official changelog URL for a version
+function getMinecraftChangelogUrl(version: string): string {
+  const urlVersion = version.replace(/\./g, "-");
+  return `https://www.minecraft.net/en-us/article/minecraft-java-edition-${urlVersion}`;
 }
 
 // Generate changelog using GPT
@@ -183,7 +185,7 @@ async function generateChangelog(
   previousVersion?: string
 ): Promise<Changelog> {
   const commitMessages = commits.map((c) => c.message).join("\n");
-  
+
   const systemPrompt = `You are an expert Minecraft server developer creating changelogs for other developers.
 Your changelogs are:
 - Concise and actionable
@@ -206,21 +208,21 @@ Be specific about class names, method signatures, and version numbers when relev
 If a category has no items, use an empty array.`;
 
   let userPrompt = `Generate a developer-focused changelog for ${project.toUpperCase()} version ${version}`;
-  
+
   if (previousVersion) {
     userPrompt += ` (updating from ${previousVersion})`;
   }
-  
+
   userPrompt += `.\n\n`;
-  
+
   if (officialChangelog) {
     userPrompt += `OFFICIAL MINECRAFT CHANGELOG:\n${officialChangelog}\n\n`;
   }
-  
+
   if (commitMessages) {
     userPrompt += `COMMITS:\n${commitMessages}\n\n`;
   }
-  
+
   userPrompt += `Generate the changelog JSON:`;
 
   try {
@@ -251,9 +253,13 @@ If a category has no items, use an empty array.`;
       resource_format_changes: parsed.resource_format_changes || [],
       developer_notes: parsed.developer_notes || [],
       raw_commits: commits.map((c) => c.message),
-      official_changelog_url: project === "vanilla" 
-        ? `https://www.minecraft.net/en-us/article/minecraft-java-edition-${version.replace(/\./g, "-")}`
-        : undefined,
+      official_changelog_url:
+        project === "vanilla"
+          ? `https://www.minecraft.net/en-us/article/minecraft-java-edition-${version.replace(
+              /\./g,
+              "-"
+            )}`
+          : undefined,
       generated_at: new Date().toISOString(),
     };
   } catch (error) {
@@ -277,27 +283,25 @@ If a category has no items, use an empty array.`;
 
 // Store changelog in database
 async function storeChangelog(changelog: Changelog): Promise<void> {
-  const { error } = await supabase
-    .from("changelogs")
-    .upsert(
-      {
-        version: changelog.version,
-        project: changelog.project,
-        summary: changelog.summary,
-        breaking_changes: changelog.breaking_changes,
-        new_features: changelog.new_features,
-        bug_fixes: changelog.bug_fixes,
-        api_changes: changelog.api_changes,
-        resource_format_changes: changelog.resource_format_changes,
-        developer_notes: changelog.developer_notes,
-        raw_commits: changelog.raw_commits,
-        official_changelog_url: changelog.official_changelog_url,
-        generated_at: changelog.generated_at,
-      },
-      {
-        onConflict: "version,project",
-      }
-    );
+  const { error } = await supabase.from("changelogs").upsert(
+    {
+      version: changelog.version,
+      project: changelog.project,
+      summary: changelog.summary,
+      breaking_changes: changelog.breaking_changes,
+      new_features: changelog.new_features,
+      bug_fixes: changelog.bug_fixes,
+      api_changes: changelog.api_changes,
+      resource_format_changes: changelog.resource_format_changes,
+      developer_notes: changelog.developer_notes,
+      raw_commits: changelog.raw_commits,
+      official_changelog_url: changelog.official_changelog_url,
+      generated_at: changelog.generated_at,
+    },
+    {
+      onConflict: "version,project",
+    }
+  );
 
   if (error) {
     console.error("Error storing changelog:", error);
@@ -306,43 +310,55 @@ async function storeChangelog(changelog: Changelog): Promise<void> {
 }
 
 // Generate changelog for Vanilla (Minecraft)
-async function generateVanillaChangelog(version: string, previousVersion?: string): Promise<Changelog> {
+// Note: We don't have direct access to vanilla changelog content, so we create
+// a minimal entry that links to the official changelog
+async function generateVanillaChangelog(
+  version: string,
+  previousVersion?: string
+): Promise<Changelog> {
   console.log(`Generating Vanilla changelog for ${version}...`);
-  
-  const officialChangelog = await getMinecraftChangelog(version);
-  console.log(`  Official changelog: ${officialChangelog ? "found" : "not found"}`);
-  
-  // If no official changelog, return a minimal changelog - don't fabricate
-  if (!officialChangelog) {
-    return {
-      version,
-      project: "vanilla",
-      summary: `Minecraft ${version} release. See official changelog for details.`,
-      breaking_changes: [],
-      new_features: [],
-      bug_fixes: [],
-      api_changes: [],
-      resource_format_changes: [],
-      developer_notes: [`No detailed changelog available. Check official Minecraft changelog.`],
-      raw_commits: [],
-      official_changelog_url: `https://www.minecraft.net/en-us/article/minecraft-java-edition-${version.replace(/\./g, "-")}`,
-      generated_at: new Date().toISOString(),
-    };
-  }
-  
-  return generateChangelog(version, "vanilla", [], officialChangelog, previousVersion);
+
+  const versionInfo = await getMinecraftVersionInfo(version);
+  console.log(`  Version info: ${versionInfo ? "found" : "not found"}`);
+
+  // For vanilla, we create a reference entry since we can't scrape minecraft.net
+  // The official changelog URL is the primary resource
+  return {
+    version,
+    project: "vanilla",
+    summary: versionInfo 
+      ? `Minecraft ${version} (${versionInfo.type}) released on ${new Date(versionInfo.releaseTime).toLocaleDateString()}.`
+      : `Minecraft ${version} release.`,
+    breaking_changes: [],
+    new_features: [],
+    bug_fixes: [],
+    api_changes: [],
+    resource_format_changes: [],
+    developer_notes: [],
+    raw_commits: [],
+    official_changelog_url: getMinecraftChangelogUrl(version),
+    generated_at: new Date().toISOString(),
+  };
+
 }
 
 // Generate changelog for Paper
-async function generatePaperChangelog(version: string, previousVersion?: string): Promise<Changelog> {
+async function generatePaperChangelog(
+  version: string,
+  previousVersion?: string
+): Promise<Changelog> {
   console.log(`Generating Paper changelog for ${version}...`);
-  
-  const officialChangelog = await getMinecraftChangelog(version);
+
   const commits = await getPaperCommits(version);
-  console.log(`  Official changelog: ${officialChangelog ? "found" : "not found"}`);
   console.log(`  Paper commits: ${commits.length}`);
-  
-  return generateChangelog(version, "paper", commits, officialChangelog, previousVersion);
+
+  return generateChangelog(
+    version,
+    "paper",
+    commits,
+    null, // No official changelog needed - commits are the source
+    previousVersion
+  );
 }
 
 // Generate changelog for Spigot
@@ -351,17 +367,19 @@ async function generateSpigotChangelog(
   previousVersion?: string
 ): Promise<Changelog> {
   console.log(`Generating Spigot changelog for ${version}...`);
-  
+
   const currentInfo = await getSpigotVersionInfo(version);
-  const previousInfo = previousVersion ? await getSpigotVersionInfo(previousVersion) : null;
-  
+  const previousInfo = previousVersion
+    ? await getSpigotVersionInfo(previousVersion)
+    : null;
+
   if (!currentInfo) {
     console.log(`  No Spigot version info found for ${version}`);
     return generateChangelog(version, "spigot", []);
   }
-  
+
   let commits: Commit[] = [];
-  
+
   if (previousInfo) {
     // Get commits between versions
     const cbCommits = await getSpigotCommits(
@@ -379,18 +397,26 @@ async function generateSpigotChangelog(
       previousInfo.refs.Bukkit,
       currentInfo.refs.Bukkit
     );
-    
+
     commits = [
       ...bukkitCommits.map((c) => ({ ...c, message: `[Bukkit] ${c.message}` })),
-      ...cbCommits.map((c) => ({ ...c, message: `[CraftBukkit] ${c.message}` })),
+      ...cbCommits.map((c) => ({
+        ...c,
+        message: `[CraftBukkit] ${c.message}`,
+      })),
       ...spigotCommits.map((c) => ({ ...c, message: `[Spigot] ${c.message}` })),
     ];
   }
-  
+
   console.log(`  Spigot commits: ${commits.length}`);
-  
-  const officialChangelog = await getMinecraftChangelog(version);
-  return generateChangelog(version, "spigot", commits, officialChangelog, previousVersion);
+
+  return generateChangelog(
+    version,
+    "spigot",
+    commits,
+    null, // No official changelog needed - commits are the source
+    previousVersion
+  );
 }
 
 // Main function - test with specific versions
@@ -399,47 +425,55 @@ async function main() {
   const version = args[0] || "1.21.11";
   const previousVersion = args[1] || "1.21.10";
   const project = args[2] || "all";
-  
+
   console.log(`\n=== Changelog Generator ===`);
   console.log(`Version: ${version}`);
   console.log(`Previous: ${previousVersion}`);
   console.log(`Project: ${project}\n`);
-  
+
   if (project === "all" || project === "vanilla") {
-    const vanillaChangelog = await generateVanillaChangelog(version, previousVersion);
+    const vanillaChangelog = await generateVanillaChangelog(
+      version,
+      previousVersion
+    );
     console.log("\n--- VANILLA CHANGELOG ---");
     console.log(JSON.stringify(vanillaChangelog, null, 2));
-    
+
     if (process.env.STORE_CHANGELOGS === "true") {
       await storeChangelog(vanillaChangelog);
       console.log("  Stored in database.");
     }
   }
-  
+
   if (project === "all" || project === "paper") {
-    const paperChangelog = await generatePaperChangelog(version, previousVersion);
+    const paperChangelog = await generatePaperChangelog(
+      version,
+      previousVersion
+    );
     console.log("\n--- PAPER CHANGELOG ---");
     console.log(JSON.stringify(paperChangelog, null, 2));
-    
+
     if (process.env.STORE_CHANGELOGS === "true") {
       await storeChangelog(paperChangelog);
       console.log("  Stored in database.");
     }
   }
-  
+
   if (project === "all" || project === "spigot") {
-    const spigotChangelog = await generateSpigotChangelog(version, previousVersion);
+    const spigotChangelog = await generateSpigotChangelog(
+      version,
+      previousVersion
+    );
     console.log("\n--- SPIGOT CHANGELOG ---");
     console.log(JSON.stringify(spigotChangelog, null, 2));
-    
+
     if (process.env.STORE_CHANGELOGS === "true") {
       await storeChangelog(spigotChangelog);
       console.log("  Stored in database.");
     }
   }
-  
+
   console.log("\n=== Done ===\n");
 }
 
 main().catch(console.error);
-

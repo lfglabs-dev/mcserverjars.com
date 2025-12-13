@@ -20,7 +20,7 @@ interface ChangelogRow {
 /**
  * Get changelogs for a version range
  * GET /api/v1/changelogs/range?from=1.21.9&to=1.21.11&project=paper
- * 
+ *
  * Returns changelogs from version (excluded) to version (included)
  * Useful for LLMs to understand what changed between versions
  */
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createServiceClient();
     const { searchParams } = new URL(request.url);
-    
+
     const from = searchParams.get("from"); // version to start from (excluded)
     const to = searchParams.get("to"); // version to end at (included)
     const project = searchParams.get("project"); // optional filter
@@ -77,24 +77,26 @@ export async function GET(request: NextRequest) {
     const aggregated = {
       from_version: from,
       to_version: to,
-      versions_included: [...new Set(filtered.map((c) => c.version))].sort(compareVersions),
+      versions_included: [...new Set(filtered.map((c) => c.version))].sort(
+        compareVersions
+      ),
       by_project: Object.fromEntries(
         Object.entries(byProject).map(([proj, logs]) => [
           proj,
           {
-            breaking_changes: logs.flatMap((c) => 
+            breaking_changes: logs.flatMap((c) =>
               c.breaking_changes.map((bc) => `[${c.version}] ${bc}`)
             ),
-            new_features: logs.flatMap((c) => 
+            new_features: logs.flatMap((c) =>
               c.new_features.map((nf) => `[${c.version}] ${nf}`)
             ),
-            api_changes: logs.flatMap((c) => 
+            api_changes: logs.flatMap((c) =>
               c.api_changes.map((ac) => `[${c.version}] ${ac}`)
             ),
-            resource_format_changes: logs.flatMap((c) => 
+            resource_format_changes: logs.flatMap((c) =>
               c.resource_format_changes.map((rf) => `[${c.version}] ${rf}`)
             ),
-            developer_notes: logs.flatMap((c) => 
+            developer_notes: logs.flatMap((c) =>
               c.developer_notes.map((dn) => `[${c.version}] ${dn}`)
             ),
           },
@@ -130,7 +132,7 @@ export async function GET(request: NextRequest) {
 function compareVersions(a: string, b: string): number {
   const partsA = a.split(".").map(Number);
   const partsB = b.split(".").map(Number);
-  
+
   for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
     const numA = partsA[i] || 0;
     const numB = partsB[i] || 0;
@@ -138,4 +140,3 @@ function compareVersions(a: string, b: string): number {
   }
   return 0;
 }
-

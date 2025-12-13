@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createServiceClient();
     const { searchParams } = new URL(request.url);
-    
+
     const project = searchParams.get("project"); // vanilla, paper, spigot
     const from = searchParams.get("from"); // version to start from (excluded)
     const to = searchParams.get("to"); // version to end at (included)
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
 function compareVersions(a: string, b: string): number {
   const partsA = a.split(".").map(Number);
   const partsB = b.split(".").map(Number);
-  
+
   for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
     const numA = partsA[i] || 0;
     const numB = partsB[i] || 0;
@@ -101,4 +101,3 @@ function compareVersions(a: string, b: string): number {
   }
   return 0;
 }
-

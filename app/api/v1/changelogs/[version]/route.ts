@@ -25,13 +25,10 @@ export async function GET(
     const { version } = await params;
     const supabase = createServiceClient();
     const { searchParams } = new URL(request.url);
-    
+
     const project = searchParams.get("project"); // optional filter
 
-    let query = supabase
-      .from("changelogs")
-      .select("*")
-      .eq("version", version);
+    let query = supabase.from("changelogs").select("*").eq("version", version);
 
     if (project) {
       query = query.eq("project", project);
@@ -107,4 +104,3 @@ export async function GET(
     );
   }
 }
-

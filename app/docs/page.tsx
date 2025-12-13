@@ -1,6 +1,12 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { RiArrowRightLine, RiCodeLine, RiServerLine, RiDownloadLine, RiListCheck } from "@remixicon/react";
+import {
+  RiArrowRightLine,
+  RiCodeLine,
+  RiServerLine,
+  RiDownloadLine,
+  RiListCheck,
+} from "@remixicon/react";
 
 export const metadata: Metadata = {
   title: "API Documentation | MCServerJars",
@@ -330,4 +336,3 @@ export default function DocsPage() {
     </div>
   );
 }
-
