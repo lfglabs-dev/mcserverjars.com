@@ -5,6 +5,20 @@ import Link from "next/link";
 import { RiCloseLine, RiMenuLine, RiGithubFill } from "@remixicon/react";
 import { useState, useEffect } from "react";
 import { cx } from "@/lib/utils";
+import { Dropdown, MobileDropdown } from "./Dropdown";
+
+const developerMenuItems = [
+  {
+    label: "NMS Mappings",
+    href: "/developers/nms",
+    description: "Minecraft → CraftBukkit package versions",
+  },
+  {
+    label: "API Documentation",
+    href: "/docs",
+    description: "REST API reference for MCServerJars",
+  },
+];
 
 export function Navigation() {
   const [scrolled, setScrolled] = useState(false);
@@ -46,9 +60,9 @@ export function Navigation() {
             <NavLink href="/paper">Paper</NavLink>
             <NavLink href="/spigot">Spigot</NavLink>
             <NavLink href="/vanilla">Vanilla</NavLink>
-            <NavLink href="/developers">Developers</NavLink>
+            <Dropdown label="Developers" items={developerMenuItems} />
             <a
-              href="https://github.com/oraxen"
+              href="https://github.com/lfglabs-dev/mcserverjars.com"
               target="_blank"
               rel="noopener noreferrer"
               className="ml-2 p-2 rounded-md text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-[var(--bg-subtle)] transition-colors"
@@ -85,9 +99,11 @@ export function Navigation() {
             <MobileNavLink href="/vanilla" onClick={() => setOpen(false)}>
               Vanilla
             </MobileNavLink>
-            <MobileNavLink href="/developers" onClick={() => setOpen(false)}>
-              Developers
-            </MobileNavLink>
+            <MobileDropdown
+              label="Developers"
+              items={developerMenuItems}
+              onNavigate={() => setOpen(false)}
+            />
           </div>
         )}
       </nav>
