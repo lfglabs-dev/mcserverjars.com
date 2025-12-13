@@ -132,7 +132,7 @@ export function ChangelogTimeline({ versions, byVersion }: Props) {
                 {availableProjects.map((project) => {
                   const log = logs[project];
                   if (!log) return null;
-                  
+
                   const projectExpanded = isProjectExpanded(version, project);
                   const hasContent =
                     log.breaking_changes?.length > 0 ||
@@ -143,7 +143,7 @@ export function ChangelogTimeline({ versions, byVersion }: Props) {
                     log.developer_notes?.length > 0;
 
                   // Count total changes for badge
-                  const changeCount = 
+                  const changeCount =
                     (log.breaking_changes?.length || 0) +
                     (log.new_features?.length || 0) +
                     (log.api_changes?.length || 0) +
@@ -165,7 +165,7 @@ export function ChangelogTimeline({ versions, byVersion }: Props) {
                         onClick={() => toggleProject(version, project)}
                         className="w-full flex items-center gap-3 p-3 text-left"
                       >
-                        <RiArrowRightSLine 
+                        <RiArrowRightSLine
                           className={`w-4 h-4 text-[var(--text-muted)] transition-transform ${
                             projectExpanded ? "rotate-90" : ""
                           }`}
@@ -173,7 +173,7 @@ export function ChangelogTimeline({ versions, byVersion }: Props) {
                         <span className="text-sm font-semibold text-[var(--text-primary)]">
                           {projectLabels[project]}
                         </span>
-                        
+
                         {/* Change count badge */}
                         {changeCount > 0 && (
                           <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--bg-card)] text-[var(--text-muted)]">
@@ -190,18 +190,19 @@ export function ChangelogTimeline({ versions, byVersion }: Props) {
                         )}
 
                         {/* Official link */}
-                        {log.official_changelog_url && project === "vanilla" && (
-                          <a
-                            href={log.official_changelog_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="ml-auto flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                          >
-                            Official
-                            <RiExternalLinkLine className="w-3 h-3" />
-                          </a>
-                        )}
+                        {log.official_changelog_url &&
+                          project === "vanilla" && (
+                            <a
+                              href={log.official_changelog_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="ml-auto flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                            >
+                              Official
+                              <RiExternalLinkLine className="w-3 h-3" />
+                            </a>
+                          )}
                       </button>
 
                       {/* Project Content */}
@@ -271,14 +272,33 @@ interface ChangeSectionProps {
   isWarning?: boolean;
 }
 
-function ChangeSection({ icon: Icon, title, items, isWarning }: ChangeSectionProps) {
+function ChangeSection({
+  icon: Icon,
+  title,
+  items,
+  isWarning,
+}: ChangeSectionProps) {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className={`p-3 rounded-lg ${isWarning ? "bg-red-500/5 border border-red-500/10" : "bg-[var(--bg-subtle)]"}`}>
+    <div
+      className={`p-3 rounded-lg ${
+        isWarning
+          ? "bg-red-500/5 border border-red-500/10"
+          : "bg-[var(--bg-subtle)]"
+      }`}
+    >
       <div className="flex items-center gap-2 mb-2">
-        <Icon className={`w-3.5 h-3.5 ${isWarning ? "text-red-400" : "text-[var(--text-muted)]"}`} />
-        <h4 className={`text-xs font-semibold uppercase tracking-wide ${isWarning ? "text-red-400" : "text-[var(--text-muted)]"}`}>
+        <Icon
+          className={`w-3.5 h-3.5 ${
+            isWarning ? "text-red-400" : "text-[var(--text-muted)]"
+          }`}
+        />
+        <h4
+          className={`text-xs font-semibold uppercase tracking-wide ${
+            isWarning ? "text-red-400" : "text-[var(--text-muted)]"
+          }`}
+        >
           {title}
         </h4>
         <span className="ml-auto text-xs text-[var(--text-muted)] opacity-50 font-mono">
