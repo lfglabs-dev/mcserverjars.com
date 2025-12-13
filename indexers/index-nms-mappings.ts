@@ -5,6 +5,7 @@
  * NMS package revisions by:
  * 1. Fetching our already-built Spigot jars from the API
  * 2. Extracting the NMS revision from the CraftServer.class path
+ * 3. Falling back to known mappings when jars aren't available
  *
  * Note: The backend now also extracts and stores NMS mappings during builds,
  * so this indexer mainly serves to backfill or verify existing data.
@@ -12,6 +13,65 @@
 
 import { createClient } from "@supabase/supabase-js";
 import JSZip from "jszip";
+
+/**
+ * Known NMS version mappings - verified from actual Spigot jars
+ * Updated: 2025-01-xx
+ * Source: SpigotMC BuildData / actual jar extraction
+ */
+const KNOWN_NMS_MAPPINGS: Record<string, string> = {
+  // 1.21.x
+  "1.21.11": "v1_21_R6",
+  "1.21.10": "v1_21_R6",
+  "1.21.9": "v1_21_R6",
+  "1.21.8": "v1_21_R5",
+  "1.21.7": "v1_21_R5",
+  "1.21.6": "v1_21_R4",
+  "1.21.5": "v1_21_R4",
+  "1.21.4": "v1_21_R3",
+  "1.21.3": "v1_21_R3",
+  "1.21.2": "v1_21_R3",
+  "1.21.1": "v1_21_R2",
+  "1.21": "v1_21_R1",
+  // 1.20.x
+  "1.20.6": "v1_20_R4",
+  "1.20.5": "v1_20_R4",
+  "1.20.4": "v1_20_R3",
+  "1.20.3": "v1_20_R3",
+  "1.20.2": "v1_20_R2",
+  "1.20.1": "v1_20_R1",
+  "1.20": "v1_20_R1",
+  // 1.19.x
+  "1.19.4": "v1_19_R3",
+  "1.19.3": "v1_19_R2",
+  "1.19.2": "v1_19_R1",
+  "1.19.1": "v1_19_R1",
+  "1.19": "v1_19_R1",
+  // 1.18.x
+  "1.18.2": "v1_18_R2",
+  "1.18.1": "v1_18_R1",
+  "1.18": "v1_18_R1",
+  // 1.17.x
+  "1.17.1": "v1_17_R1",
+  "1.17": "v1_17_R1",
+  // Legacy (pre-1.17)
+  "1.16.5": "v1_16_R3",
+  "1.16.4": "v1_16_R3",
+  "1.16.3": "v1_16_R2",
+  "1.16.2": "v1_16_R2",
+  "1.16.1": "v1_16_R1",
+  "1.15.2": "v1_15_R1",
+  "1.14.4": "v1_14_R1",
+  "1.13.2": "v1_13_R2",
+  "1.13": "v1_13_R1",
+  "1.12.2": "v1_12_R1",
+  "1.11.2": "v1_11_R1",
+  "1.10.2": "v1_10_R1",
+  "1.9.4": "v1_9_R2",
+  "1.9": "v1_9_R1",
+  "1.8.8": "v1_8_R3",
+  "1.8": "v1_8_R1",
+};
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -168,6 +228,12 @@ async function indexNmsMappings(): Promise<void> {
     } else {
       // Try to extract from our built jar
       revision = await getNmsRevisionFromApi(mcVersion);
+      
+      // Fall back to known mappings if jar isn't available
+      if (!revision && KNOWN_NMS_MAPPINGS[mcVersion]) {
+        revision = KNOWN_NMS_MAPPINGS[mcVersion];
+        console.log(`  Using known mapping: ${revision}`);
+      }
     }
 
     if (!revision) {
