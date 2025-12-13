@@ -110,39 +110,30 @@ export default async function DevelopersPage() {
   }
 
   return (
-    <div className="min-h-screen relative">
-      {/* Background gradient orbs - extend across entire page */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-48 left-1/4 w-[600px] h-[600px] bg-emerald-500/8 rounded-full blur-[120px]" />
-        <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-cyan-500/8 rounded-full blur-[100px]" />
-        <div className="absolute top-[400px] left-1/3 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[80px]" />
-      </div>
-
+    <div className="min-h-screen hero-gradient">
       {/* Hero Section */}
-      <div className="relative">
-        <div className="mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-6">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Developer Tools
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-            NMS Version Mappings
-          </h1>
-
-          <p className="text-lg text-[var(--text-muted)] max-w-xl mx-auto">
-            Instantly find the CraftBukkit package revision for any Minecraft
-            version.
-            <br />
-            <span className="text-sm opacity-75">
-              Used in reflection-based NMS access
-            </span>
-          </p>
+      <div className="mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-6">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          Developer Tools
         </div>
+
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+          NMS Version Mappings
+        </h1>
+
+        <p className="text-lg text-[var(--text-muted)] max-w-xl mx-auto">
+          Instantly find the CraftBukkit package revision for any Minecraft
+          version.
+          <br />
+          <span className="text-sm opacity-75">
+            Used in reflection-based NMS access
+          </span>
+        </p>
       </div>
 
       {/* Main Content */}
-      <div className="relative mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
         <NmsLookup
           byVersion={byVersion}
           byRevision={byRevision}

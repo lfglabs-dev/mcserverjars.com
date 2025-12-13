@@ -91,35 +91,26 @@ export default async function ChangelogsPage() {
   const versions = Object.keys(byVersion).sort(compareVersions);
 
   return (
-    <div className="min-h-screen relative">
-      {/* Background gradient orbs - extend across entire page */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-48 left-1/4 w-[600px] h-[600px] bg-violet-500/8 rounded-full blur-[120px]" />
-        <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-blue-500/8 rounded-full blur-[100px]" />
-        <div className="absolute top-[400px] left-1/3 w-[400px] h-[400px] bg-violet-500/5 rounded-full blur-[80px]" />
-      </div>
-
+    <div className="min-h-screen hero-gradient">
       {/* Hero Section */}
-      <div className="relative">
-        <div className="mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 text-sm font-medium mb-6">
-            <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-            Developer Tools
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-            Version Changelogs
-          </h1>
-
-          <p className="text-lg text-[var(--text-muted)] max-w-xl mx-auto">
-            Developer-focused changelogs with breaking changes, API updates, and
-            everything you need to keep your plugins up to date.
-          </p>
+      <div className="mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 text-sm font-medium mb-6">
+          <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+          Developer Tools
         </div>
+
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+          Version Changelogs
+        </h1>
+
+        <p className="text-lg text-[var(--text-muted)] max-w-xl mx-auto">
+          Developer-focused changelogs with breaking changes, API updates, and
+          everything you need to keep your plugins up to date.
+        </p>
       </div>
 
       {/* Main Content */}
-      <div className="relative mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
         <ChangelogTimeline versions={versions} byVersion={byVersion} />
 
         {/* API Section */}
