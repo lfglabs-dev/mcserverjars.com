@@ -276,6 +276,26 @@ jobs:
         run: bun run index-arclight.ts
         working-directory: ./indexers
 
+  index-nms-mappings:
+    name: Index NMS Version Mappings
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.project == '' || github.event.inputs.project == 'nms' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./indexers
+
+      - name: Index NMS Mappings
+        run: bun run index-nms-mappings.ts
+        working-directory: ./indexers
+
   revalidate-pages:
     name: Trigger Revalidation
     runs-on: ubuntu-latest

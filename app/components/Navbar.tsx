@@ -46,6 +46,7 @@ export function Navigation() {
             <NavLink href="/paper">Paper</NavLink>
             <NavLink href="/spigot">Spigot</NavLink>
             <NavLink href="/vanilla">Vanilla</NavLink>
+            <NavLink href="/developers">Developers</NavLink>
             <a
               href="https://github.com/oraxen"
               target="_blank"
@@ -83,6 +84,9 @@ export function Navigation() {
             </MobileNavLink>
             <MobileNavLink href="/vanilla" onClick={() => setOpen(false)}>
               Vanilla
+            </MobileNavLink>
+            <MobileNavLink href="/developers" onClick={() => setOpen(false)}>
+              Developers
             </MobileNavLink>
           </div>
         )}

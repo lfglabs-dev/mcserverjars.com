@@ -91,6 +91,9 @@ async fn main() -> anyhow::Result<()> {
         // Build endpoint
         .route("/v1/build", post(trigger_build))
         .route("/v1/build/status", get(get_build_status))
+        // NMS mappings
+        .route("/v1/nms-mappings", get(list_nms_mappings))
+        .route("/v1/nms-mappings/{version}", get(get_nms_mapping))
         // Jar downloads
         .route("/jars/{*path}", get(serve_jar))
         // Health check
@@ -357,6 +360,33 @@ async fn run_build(state: &AppState, version: &str, build_type: BuildType) -> an
         download_url
     );
 
+    // If we extracted an NMS revision, store it in nms_version_mappings
+    if let Some(ref nms_revision) = result.nms_revision {
+        let craftbukkit_package = format!("org.bukkit.craftbukkit.{}", nms_revision);
+        let spigot_version = format!("{}-R0.1-SNAPSHOT", version);
+        
+        sqlx::query(
+            r#"
+            INSERT INTO nms_version_mappings (
+                minecraft_version, nms_revision, craftbukkit_package, spigot_version, is_latest_for_revision
+            ) VALUES ($1, $2, $3, $4, false)
+            ON CONFLICT (minecraft_version) DO UPDATE SET
+                nms_revision = EXCLUDED.nms_revision,
+                craftbukkit_package = EXCLUDED.craftbukkit_package,
+                spigot_version = EXCLUDED.spigot_version,
+                updated_at = NOW()
+            "#
+        )
+        .bind(version)
+        .bind(nms_revision)
+        .bind(&craftbukkit_package)
+        .bind(&spigot_version)
+        .execute(&state.pool)
+        .await?;
+        
+        tracing::info!("Stored NMS mapping: {} -> {}", version, nms_revision);
+    }
+
     // Cleanup build directory
     runner.cleanup_version(version, build_type).await?;
 
@@ -542,4 +572,82 @@ async fn get_build(
     .await?;
 
     build.ok_or(AppError::NotFound).map(Json)
+}
+
+// === NMS Mappings ===
+
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+struct NmsMappingResponse {
+    minecraft_version: String,
+    nms_revision: String,
+    craftbukkit_package: String,
+    spigot_version: Option<String>,
+    is_latest_for_revision: bool,
+}
+
+#[derive(Debug, Serialize)]
+struct NmsMappingsListResponse {
+    mappings: Vec<NmsMappingResponse>,
+    by_revision: std::collections::HashMap<String, Vec<String>>,
+    by_version: std::collections::HashMap<String, String>,
+}
+
+async fn list_nms_mappings(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<NmsMappingsListResponse>, AppError> {
+    let mappings: Vec<NmsMappingResponse> = sqlx::query_as(
+        r#"
+        SELECT 
+            minecraft_version,
+            nms_revision,
+            craftbukkit_package,
+            spigot_version,
+            is_latest_for_revision
+        FROM nms_version_mappings
+        ORDER BY minecraft_version DESC
+        "#
+    )
+    .fetch_all(&state.pool)
+    .await?;
+
+    // Build grouped views
+    let mut by_revision: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
+    let mut by_version: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+
+    for mapping in &mappings {
+        by_version.insert(mapping.minecraft_version.clone(), mapping.nms_revision.clone());
+        by_revision
+            .entry(mapping.nms_revision.clone())
+            .or_default()
+            .push(mapping.minecraft_version.clone());
+    }
+
+    Ok(Json(NmsMappingsListResponse {
+        mappings,
+        by_revision,
+        by_version,
+    }))
+}
+
+async fn get_nms_mapping(
+    State(state): State<Arc<AppState>>,
+    Path(version): Path<String>,
+) -> Result<Json<NmsMappingResponse>, AppError> {
+    let mapping: Option<NmsMappingResponse> = sqlx::query_as(
+        r#"
+        SELECT 
+            minecraft_version,
+            nms_revision,
+            craftbukkit_package,
+            spigot_version,
+            is_latest_for_revision
+        FROM nms_version_mappings
+        WHERE minecraft_version = $1
+        "#
+    )
+    .bind(&version)
+    .fetch_optional(&state.pool)
+    .await?;
+
+    mapping.ok_or(AppError::NotFound).map(Json)
 }

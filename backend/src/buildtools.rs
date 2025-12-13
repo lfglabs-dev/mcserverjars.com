@@ -4,11 +4,12 @@
 //! Spigot and CraftBukkit server jars for versions that require building.
 
 use anyhow::{Context, Result};
-use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use sha2::{Digest, Sha256};
+use std::io::{Read, Seek};
 use std::path::PathBuf;
 use std::process::Command;
 use tokio::fs;
+use zip::ZipArchive;
 
 const BUILDTOOLS_URL: &str = "https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar";
 
@@ -135,7 +136,13 @@ impl BuildToolsRunner {
         let sha256 = calculate_sha256(&contents);
         let file_size = contents.len() as i64;
 
-        tracing::info!("Built jar: {} ({} bytes, sha256: {})", file_name, file_size, &sha256[..16]);
+        // Extract NMS revision from the jar
+        let nms_revision = extract_nms_revision(&contents);
+
+        tracing::info!(
+            "Built jar: {} ({} bytes, sha256: {}, nms: {:?})", 
+            file_name, file_size, &sha256[..16], nms_revision
+        );
 
         Ok(BuildResult {
             jar_path: jar_path.clone(),
@@ -143,6 +150,7 @@ impl BuildToolsRunner {
             file_size,
             sha256,
             contents,
+            nms_revision,
         })
     }
 
@@ -219,12 +227,46 @@ pub struct BuildResult {
     pub file_size: i64,
     pub sha256: String,
     pub contents: Vec<u8>,
+    /// NMS revision extracted from the jar (e.g., "v1_21_R4")
+    pub nms_revision: Option<String>,
 }
 
 fn calculate_sha256(data: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(data);
     hex::encode(hasher.finalize())
+}
+
+/// Extract NMS revision from a built jar by finding CraftServer.class
+/// Returns the NMS revision like "v1_21_R4"
+pub fn extract_nms_revision(jar_data: &[u8]) -> Option<String> {
+    use regex::Regex;
+    use std::io::Cursor;
+
+    let cursor = Cursor::new(jar_data);
+    let mut archive = match ZipArchive::new(cursor) {
+        Ok(a) => a,
+        Err(e) => {
+            tracing::warn!("Failed to open jar as zip: {}", e);
+            return None;
+        }
+    };
+
+    let pattern = Regex::new(r"^org/bukkit/craftbukkit/(v\d+_\d+_R\d+)/CraftServer\.class$").ok()?;
+
+    for i in 0..archive.len() {
+        if let Ok(file) = archive.by_index(i) {
+            let name = file.name();
+            if let Some(caps) = pattern.captures(name) {
+                let revision = caps.get(1)?.as_str().to_string();
+                tracing::info!("Extracted NMS revision: {}", revision);
+                return Some(revision);
+            }
+        }
+    }
+
+    tracing::warn!("Could not find CraftServer.class in jar");
+    None
 }
 
 #[cfg(test)]
