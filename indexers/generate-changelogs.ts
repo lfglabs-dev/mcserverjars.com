@@ -181,15 +181,19 @@ function getMinecraftChangelogUrl(version: string): string {
 }
 
 // Fetch and extract text content from Minecraft.net changelog page
-async function fetchMinecraftChangelogContent(version: string): Promise<string | null> {
+async function fetchMinecraftChangelogContent(
+  version: string
+): Promise<string | null> {
   try {
     const url = getMinecraftChangelogUrl(version);
     console.log(`  Fetching: ${url}`);
-    
+
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
       },
     });
@@ -200,7 +204,7 @@ async function fetchMinecraftChangelogContent(version: string): Promise<string |
     }
 
     const html = await response.text();
-    
+
     // Extract text content from the HTML
     let text = html
       // Remove scripts and styles
@@ -225,7 +229,9 @@ async function fetchMinecraftChangelogContent(version: string): Promise<string |
       .trim();
 
     // Try to find the changelog section
-    const changelogMatch = text.match(/(Technical Changes|Changes in|New Features|Bug Fixes|Experimental|Fixed bugs|CHANGES|FEATURES)[\s\S]{100,10000}/i);
+    const changelogMatch = text.match(
+      /(Technical Changes|Changes in|New Features|Bug Fixes|Experimental|Fixed bugs|CHANGES|FEATURES)[\s\S]{100,10000}/i
+    );
     if (changelogMatch) {
       text = changelogMatch[0];
     }
@@ -258,7 +264,7 @@ Your changelogs are:
 - Concise and actionable
 - Focused on what developers need to know
 - Highlighting breaking changes, API changes, and resource format changes
-- Written for LLM consumption to help with update processes
+- Useful for plugin/mod developers updating their projects
 
 Output format (JSON):
 {
@@ -267,11 +273,24 @@ Output format (JSON):
   "new_features": ["New features or capabilities added"],
   "bug_fixes": ["Important bug fixes"],
   "api_changes": ["API additions, deprecations, or modifications"],
-  "resource_format_changes": ["Changes to data packs, resource packs, NBT formats, etc."],
+  "resource_format_changes": ["BE VERY SPECIFIC about resource pack and data pack changes:
+    - Custom Model Data format changes (e.g., 'CustomModelData changed from int to object with floats[], flags[], strings[], colors[]')
+    - File path changes (e.g., 'textures/item/old.png moved to textures/item/new.png')
+    - JSON format changes (e.g., 'model predicate format changed from X to Y')
+    - New required fields in pack.mcmeta
+    - Atlas/texture changes
+    - Sound file reorganization
+    - Block state format changes
+    - NBT format changes"],
   "developer_notes": ["Important notes for plugin/mod developers"]
 }
 
-Be specific about class names, method signatures, and version numbers when relevant.
+Be VERY specific about:
+- Exact file paths that changed
+- Exact JSON field names that were added/removed/renamed
+- Exact format changes (old format → new format)
+- Version numbers and pack_format values
+
 If a category has no items, use an empty array.`;
 
   let userPrompt = `Generate a developer-focused changelog for ${project.toUpperCase()} version ${version}`;
@@ -389,7 +408,7 @@ async function generateVanillaChangelog(
 
   // Try to fetch the official changelog content
   const pageContent = await fetchMinecraftChangelogContent(version);
-  
+
   if (pageContent) {
     console.log(`  Page content found, generating with GPT...`);
     // Use GPT to extract developer-relevant information
