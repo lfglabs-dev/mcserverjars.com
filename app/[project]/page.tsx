@@ -25,8 +25,13 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllProjectSlugs();
-  return slugs.map((project) => ({ project }));
+  try {
+    const slugs = await getAllProjectSlugs();
+    return slugs.map((project) => ({ project }));
+  } catch {
+    // Return empty if Supabase isn't available during build
+    return [];
+  }
 }
 
 export async function generateMetadata({

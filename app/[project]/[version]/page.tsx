@@ -22,20 +22,25 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllProjectSlugs();
-  const params: { project: string; version: string }[] = [];
+  try {
+    const slugs = await getAllProjectSlugs();
+    const params: { project: string; version: string }[] = [];
 
-  for (const slug of slugs) {
-    const project = await getProjectBySlug(slug);
-    if (!project) continue;
+    for (const slug of slugs) {
+      const project = await getProjectBySlug(slug);
+      if (!project) continue;
 
-    const versions = await getProjectVersions(project.id);
-    for (const version of versions) {
-      params.push({ project: slug, version: version.version });
+      const versions = await getProjectVersions(project.id);
+      for (const version of versions) {
+        params.push({ project: slug, version: version.version });
+      }
     }
-  }
 
-  return params;
+    return params;
+  } catch {
+    // Return empty if Supabase isn't available during build
+    return [];
+  }
 }
 
 export async function generateMetadata({
