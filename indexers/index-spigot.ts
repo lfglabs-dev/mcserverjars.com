@@ -2,6 +2,7 @@
  * Spigot/CraftBukkit Indexer
  *
  * Triggers builds via the backend API which runs BuildTools.
+ * Builds one version at a time, waiting for each to complete.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -10,9 +11,14 @@ const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const API_URL = process.env.API_URL || "https://api.mcserverjars.com";
 
+// Build timeout: 10 minutes per build
+const BUILD_TIMEOUT_MS = 10 * 60 * 1000;
+// Poll interval: check every 15 seconds
+const POLL_INTERVAL_MS = 15 * 1000;
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// Versions that BuildTools supports
+// Versions that BuildTools supports (newest first)
 const SUPPORTED_VERSIONS = [
   "1.21.4",
   "1.21.3",
@@ -71,6 +77,10 @@ interface BuildResponse {
   build_key?: string;
 }
 
+interface BuildStatusResponse {
+  builds_in_progress: string[];
+}
+
 async function getProjectId(slug: string): Promise<string | null> {
   const { data, error } = await supabase
     .from("jar_projects")
@@ -119,6 +129,41 @@ async function checkBuildExists(
   return data && data.length > 0;
 }
 
+async function getBuildStatus(): Promise<BuildStatusResponse> {
+  try {
+    const response = await fetch(`${API_URL}/v1/build/status`);
+    if (!response.ok) {
+      return { builds_in_progress: [] };
+    }
+    return (await response.json()) as BuildStatusResponse;
+  } catch {
+    return { builds_in_progress: [] };
+  }
+}
+
+async function waitForBuildToComplete(buildKey: string): Promise<boolean> {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < BUILD_TIMEOUT_MS) {
+    const status = await getBuildStatus();
+
+    if (!status.builds_in_progress.includes(buildKey)) {
+      // Build is no longer in progress - it completed
+      return true;
+    }
+
+    console.log(
+      `    Waiting for ${buildKey}... (${Math.round(
+        (Date.now() - startTime) / 1000
+      )}s)`
+    );
+    await sleep(POLL_INTERVAL_MS);
+  }
+
+  console.error(`    Timeout waiting for ${buildKey}`);
+  return false;
+}
+
 async function triggerBuild(
   version: string,
   buildType: "spigot" | "craftbukkit"
@@ -133,15 +178,25 @@ async function triggerBuild(
       }),
     });
 
+    // Handle various status codes
+    if (response.status === 503) {
+      // Server busy - return status so we can wait
+      return { status: "busy", message: "Server is busy with another build" };
+    }
+
     if (!response.ok) {
       const text = await response.text();
-      console.error(`  Failed to trigger build: ${response.status} - ${text}`);
-      return { status: "error", message: text };
+      // Don't log full HTML errors
+      const shortText =
+        text.length > 100 ? text.substring(0, 100) + "..." : text;
+      return {
+        status: "error",
+        message: `HTTP ${response.status}: ${shortText}`,
+      };
     }
 
     return (await response.json()) as BuildResponse;
   } catch (error) {
-    console.error(`  Error triggering build:`, error);
     return { status: "error", message: String(error) };
   }
 }
@@ -150,9 +205,54 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function triggerAndWait(
+  version: string,
+  buildType: "spigot" | "craftbukkit"
+): Promise<"completed" | "exists" | "failed"> {
+  const buildKey = `${buildType}-${version}`;
+
+  // Check if server is busy and wait
+  let retries = 0;
+  while (retries < 60) {
+    // Max 60 retries = 15 min waiting for busy server
+    const result = await triggerBuild(version, buildType);
+
+    if (result.status === "started") {
+      console.log(`    Build started: ${buildKey}`);
+      const completed = await waitForBuildToComplete(buildKey);
+      return completed ? "completed" : "failed";
+    }
+
+    if (result.status === "exists") {
+      return "exists";
+    }
+
+    if (result.status === "busy") {
+      console.log(`    Server busy, waiting 15s...`);
+      await sleep(15000);
+      retries++;
+      continue;
+    }
+
+    if (result.status === "in_progress") {
+      console.log(`    Already in progress, waiting...`);
+      const completed = await waitForBuildToComplete(buildKey);
+      return completed ? "completed" : "failed";
+    }
+
+    // Error
+    console.error(`    Build failed: ${result.message}`);
+    return "failed";
+  }
+
+  console.error(`    Gave up waiting for server to be available`);
+  return "failed";
+}
+
 async function indexSpigot(): Promise<void> {
   console.log("Starting Spigot/CraftBukkit indexer...");
   console.log(`API URL: ${API_URL}`);
+  console.log(`Build timeout: ${BUILD_TIMEOUT_MS / 60000} minutes`);
 
   const spigotId = await getProjectId("spigot");
   const craftbukkitId = await getProjectId("craftbukkit");
@@ -162,85 +262,80 @@ async function indexSpigot(): Promise<void> {
     return;
   }
 
-  console.log(`Found ${SUPPORTED_VERSIONS.length} supported versions`);
+  console.log(`Found ${SUPPORTED_VERSIONS.length} supported versions\n`);
 
-  let buildsTriggered = 0;
-  let buildsSkipped = 0;
-  let buildsInProgress = 0;
+  let buildsCompleted = 0;
+  let buildsExisted = 0;
+  let buildsFailed = 0;
 
-  // Process versions from newest to oldest
+  // Process versions one at a time
   for (const version of SUPPORTED_VERSIONS) {
     const mcVersionId = await getMinecraftVersionId(version);
     if (!mcVersionId) {
-      console.log(`  Skipping ${version} - no MC version record`);
+      console.log(`Skipping ${version} - no MC version record`);
       continue;
     }
 
-    // Check Spigot
+    // Check and build Spigot
     const spigotExists = await checkBuildExists(spigotId, mcVersionId);
     if (!spigotExists) {
-      console.log(`  Triggering Spigot ${version}...`);
-      const result = await triggerBuild(version, "spigot");
-      console.log(`    ${result.status}: ${result.message}`);
-
-      if (result.status === "started") {
-        buildsTriggered++;
-        // Wait a bit to not overwhelm the API
-        await sleep(1000);
-      } else if (result.status === "in_progress") {
-        buildsInProgress++;
+      console.log(`Building Spigot ${version}...`);
+      const result = await triggerAndWait(version, "spigot");
+      if (result === "completed") {
+        buildsCompleted++;
+        console.log(`    ✓ Spigot ${version} completed`);
+      } else if (result === "exists") {
+        buildsExisted++;
       } else {
-        buildsSkipped++;
+        buildsFailed++;
+        console.log(`    ✗ Spigot ${version} failed`);
       }
+    } else {
+      buildsExisted++;
     }
 
-    // Check CraftBukkit
+    // Check and build CraftBukkit
     const craftbukkitExists = await checkBuildExists(
       craftbukkitId,
       mcVersionId
     );
     if (!craftbukkitExists) {
-      console.log(`  Triggering CraftBukkit ${version}...`);
-      const result = await triggerBuild(version, "craftbukkit");
-      console.log(`    ${result.status}: ${result.message}`);
-
-      if (result.status === "started") {
-        buildsTriggered++;
-        await sleep(1000);
-      } else if (result.status === "in_progress") {
-        buildsInProgress++;
+      console.log(`Building CraftBukkit ${version}...`);
+      const result = await triggerAndWait(version, "craftbukkit");
+      if (result === "completed") {
+        buildsCompleted++;
+        console.log(`    ✓ CraftBukkit ${version} completed`);
+      } else if (result === "exists") {
+        buildsExisted++;
       } else {
-        buildsSkipped++;
+        buildsFailed++;
+        console.log(`    ✗ CraftBukkit ${version} failed`);
       }
+    } else {
+      buildsExisted++;
     }
   }
 
-  console.log(`\nSpigot/CraftBukkit indexer complete.`);
-  console.log(`  Builds triggered: ${buildsTriggered}`);
-  console.log(`  Builds in progress: ${buildsInProgress}`);
-  console.log(`  Builds skipped/existing: ${buildsSkipped}`);
-
-  if (buildsTriggered > 0) {
-    console.log(
-      `\nNote: Builds run in the background. Each takes 5-10 minutes.`
-    );
-    console.log(`Check progress at: ${API_URL}/v1/build/status`);
-  }
+  console.log(`\n========================================`);
+  console.log(`Spigot/CraftBukkit indexer complete.`);
+  console.log(`  Builds completed: ${buildsCompleted}`);
+  console.log(`  Already existed: ${buildsExisted}`);
+  console.log(`  Failed: ${buildsFailed}`);
+  console.log(`========================================`);
 }
 
-// Only trigger a few builds at a time to avoid overwhelming the server
+// Build a single version (both Spigot and CraftBukkit)
 async function indexSingleVersion(version: string): Promise<void> {
   console.log(`Building Spigot and CraftBukkit for version ${version}...`);
+  console.log(`API URL: ${API_URL}\n`);
 
-  const spigotResult = await triggerBuild(version, "spigot");
-  console.log(
-    `Spigot ${version}: ${spigotResult.status} - ${spigotResult.message}`
-  );
+  console.log(`Building Spigot ${version}...`);
+  const spigotResult = await triggerAndWait(version, "spigot");
+  console.log(`  Spigot ${version}: ${spigotResult}`);
 
-  const craftbukkitResult = await triggerBuild(version, "craftbukkit");
-  console.log(
-    `CraftBukkit ${version}: ${craftbukkitResult.status} - ${craftbukkitResult.message}`
-  );
+  console.log(`Building CraftBukkit ${version}...`);
+  const craftbukkitResult = await triggerAndWait(version, "craftbukkit");
+  console.log(`  CraftBukkit ${version}: ${craftbukkitResult}`);
 }
 
 // Check command line args

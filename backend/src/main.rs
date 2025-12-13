@@ -204,6 +204,15 @@ async fn trigger_build(
                 build_key: Some(build_key),
             })));
         }
+        
+        // Limit concurrent builds to 1 to prevent server overload
+        if !builds.is_empty() {
+            return Ok((StatusCode::SERVICE_UNAVAILABLE, Json(BuildTriggerResponse {
+                status: "busy".to_string(),
+                message: format!("Server is busy building another version. Try again later. Current: {:?}", builds.iter().next()),
+                build_key: None,
+            })));
+        }
     }
 
     // Check if build already exists in database
