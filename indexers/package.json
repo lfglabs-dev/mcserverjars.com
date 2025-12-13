@@ -1,0 +1,21 @@
+{
+  "name": "mcserverjars-indexers",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "index-paper": "bun run index-paper.ts",
+    "index-vanilla": "bun run index-vanilla.ts",
+    "index-purpur": "bun run index-purpur.ts",
+    "index-fabric": "bun run index-fabric.ts",
+    "index-all": "bun run index-paper.ts && bun run index-vanilla.ts && bun run index-purpur.ts && bun run index-fabric.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  }
+}
+

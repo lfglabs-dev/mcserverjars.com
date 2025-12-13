@@ -1,0 +1,124 @@
+## MCServerJars Architecture
+
+- **Framework**: Next.js 15 (App Router) + React 19 + TypeScript 5
+- **Runtime/PM**: Bun (see `bun.lock`). Prefer `bun run` for scripts.
+- **Purpose**: Programmatic SEO-focused registry for Minecraft server jars (Paper, Spigot, Vanilla, Fabric, etc.)
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 15 (App Router) with ISR |
+| Styling | Tailwind CSS v3 |
+| Database | Supabase (PostgreSQL) |
+| Backend API | Rust (Axum) at `api.mcserverjars.com` |
+| Automation | GitHub Actions (indexers) |
+| Deployment | Vercel (frontend), Hetzner VPS (API) |
+
+### Project Structure
+
+```
+mcserverjars.com/
+├── app/                    # Next.js App Router pages
+│   ├── [project]/          # Dynamic project pages (e.g., /paper)
+│   │   ├── [version]/      # Version pages (e.g., /paper/1.21.4)
+│   │   │   └── latest/     # Redirect to latest build download
+│   │   └── latest/         # Redirect to latest version download
+│   ├── components/         # React components
+│   └── siteConfig.ts       # Site configuration
+├── lib/                    # Shared utilities
+│   ├── supabase.ts         # Supabase client
+│   ├── database.types.ts   # TypeScript types for DB
+│   ├── jars.ts             # Data fetching functions
+│   └── utils.ts            # Utility functions
+├── indexers/               # GitHub Actions indexing scripts
+│   ├── index-paper.ts      # Paper API indexer
+│   ├── index-vanilla.ts    # Vanilla/Mojang indexer
+│   ├── index-purpur.ts     # Purpur API indexer
+│   └── index-fabric.ts     # Fabric Meta indexer
+├── backend/                # Rust API server
+│   └── src/
+│       ├── main.rs         # API routes
+│       ├── buildtools.rs   # BuildTools integration
+│       └── models.rs       # Database models
+└── .github/workflows/      # CI/CD workflows
+```
+
+### Database Schema (Supabase)
+
+**Tables:**
+- `jar_projects` - Project metadata (Paper, Spigot, Vanilla, etc.)
+- `minecraft_versions` - Minecraft version registry
+- `jar_builds` - Individual downloadable builds
+- `jar_sync_logs` - Indexer run history
+
+**Key Relationships:**
+- `jar_builds.project_id` → `jar_projects.id`
+- `jar_builds.minecraft_version_id` → `minecraft_versions.id`
+
+### Rendering Strategy
+
+- **ISR (Incremental Static Regeneration)**: All pages use `revalidate = 3600` (1 hour)
+- **Static Generation**: Project and version pages are statically generated at build time
+- **Server Components**: All pages are server components for SEO
+
+### SEO Strategy
+
+1. **Clean URLs**: `/paper`, `/paper/1.21.4`, `/paper/1.21.4/123`
+2. **Programmatic Pages**: Every project/version/build combination gets its own page
+3. **Structured Data**: JSON-LD for SoftwareApplication schema
+4. **Dynamic Sitemap**: Auto-generated from database
+5. **Internal Linking**: Deep linking between versions and builds
+
+### API Endpoints (api.mcserverjars.com)
+
+```
+GET /v1/projects                              # List all projects
+GET /v1/projects/:slug                        # Get project details
+GET /v1/projects/:slug/versions               # List versions for project
+GET /v1/projects/:slug/versions/:version      # List builds for version
+GET /v1/projects/:slug/versions/:version/latest  # Get latest build
+GET /v1/projects/:slug/versions/:version/builds/:build  # Get specific build
+GET /health                                   # Health check
+```
+
+### Indexer Architecture
+
+Indexers run on GitHub Actions every 30 minutes:
+1. Fetch metadata from upstream APIs (PaperMC, Mojang, Purpur, Fabric)
+2. Normalize data and upsert into Supabase
+3. Mark latest builds per project/version
+4. Trigger Vercel revalidation (optional)
+
+### BuildTools Integration
+
+For Spigot/CraftBukkit (requires building):
+1. Rust backend downloads BuildTools.jar
+2. Runs in Docker container with Java 17
+3. Outputs jar with SHA256 checksum
+4. Uploads to storage and updates database
+
+### Environment Variables
+
+**Frontend (.env.local):**
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+**Backend:**
+```
+DATABASE_URL=postgresql://...
+PORT=3001
+RUST_LOG=info
+JAVA_PATH=/usr/bin/java
+```
+
+**Indexers (GitHub Secrets):**
+```
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+REVALIDATION_URL=
+REVALIDATION_SECRET=
+```

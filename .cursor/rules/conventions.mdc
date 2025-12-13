@@ -1,0 +1,78 @@
+## Project Conventions
+
+- **Tech Stack**: Next.js 15 (App Router), React 19, TypeScript 5, Bun
+- **Run commands**: use Bun
+  - `bun run dev`, `bun run build`, `bun run start`
+- **Directory layout**:
+  - `app/`: Next App Router routes and components
+  - `app/components/`: React components
+  - `lib/`: Utility functions and data fetching
+  - `indexers/`: GitHub Actions automation scripts
+  - `backend/`: Rust API server
+
+### TypeScript & React
+
+- **Strict mode**: keep `tsconfig` strict; no `any` unless absolutely necessary
+- **ESM only**: use modern ESM imports; no CommonJS
+- **Naming**: descriptive, self-explanatory names; avoid 1–2 char identifiers
+- **Components**: server components by default; add `"use client"` only when needed
+- **Control flow**: prefer early returns; avoid unnecessary try/catch
+
+### Data Fetching
+
+- Use server components for all data fetching
+- All pages use ISR with `revalidate = 3600`
+- Data comes from Supabase via `lib/jars.ts` functions
+- No client-side data fetching for SEO pages
+
+### Styling
+
+- Tailwind CSS for all styling
+- CSS variables for theming (defined in `globals.css`)
+- Dark mode support via `prefers-color-scheme`
+- Use `cx()` utility for conditional classes
+
+### SEO Requirements
+
+- Every page must have:
+  - Unique, keyword-rich title
+  - Meta description matching search intent
+  - Canonical URL
+  - JSON-LD structured data
+  - Proper heading hierarchy (H1 → H2 → H3)
+- Include internal links to related pages
+- Display "Last updated" for freshness signals
+
+### URL Structure
+
+```
+/                           # Homepage - all projects
+/paper                      # Project page - all Paper versions
+/paper/1.21.4               # Version page - all builds for Paper 1.21.4
+/paper/1.21.4/123           # Build page - specific build (optional)
+/paper/latest               # Redirect to latest download
+/paper/1.21.4/latest        # Redirect to latest build for version
+```
+
+### Database Conventions
+
+- Use UUIDs for primary keys
+- Timestamps use `TIMESTAMPTZ`
+- Always include `created_at` and `updated_at`
+- Use snake_case for table/column names
+- Prefix tables with domain: `jar_projects`, `jar_builds`
+
+### Indexer Conventions
+
+- Each indexer is a standalone TypeScript file
+- Use shared `lib/supabase.ts` for database operations
+- Always create sync logs for tracking
+- Handle errors gracefully and log them
+- Rate limit API calls to be respectful
+
+### Build & Validation
+
+- Builds must pass `bun run build`
+- TypeScript must compile cleanly
+- Backend: `cargo build --release`
+- Test locally before deploying
