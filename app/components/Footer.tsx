@@ -8,7 +8,7 @@ export function Footer() {
         <span>{siteConfig.name}</span>
         <div className="flex items-center gap-4">
           <Link
-            href="https://github.com/oraxen/mcserverjars"
+            href="https://github.com/oraxen"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-[var(--foreground)] transition-colors"

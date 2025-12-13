@@ -47,7 +47,7 @@ export function Navigation() {
             <NavLink href="/spigot">Spigot</NavLink>
             <NavLink href="/vanilla">Vanilla</NavLink>
             <a
-              href="https://github.com/oraxen/mcserverjars"
+              href="https://github.com/oraxen"
               target="_blank"
               rel="noopener noreferrer"
               className="ml-2 p-2 rounded-md text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-[var(--bg-subtle)] transition-colors"

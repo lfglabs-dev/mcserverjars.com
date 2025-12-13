@@ -176,6 +176,106 @@ jobs:
         run: bun run index-pufferfish.ts
         working-directory: ./indexers
 
+  index-forge:
+    name: Index Forge Builds
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.project == '' || github.event.inputs.project == 'forge' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./indexers
+
+      - name: Index Forge
+        run: bun run index-forge.ts
+        working-directory: ./indexers
+
+  index-neoforge:
+    name: Index NeoForge Builds
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.project == '' || github.event.inputs.project == 'neoforge' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./indexers
+
+      - name: Index NeoForge
+        run: bun run index-neoforge.ts
+        working-directory: ./indexers
+
+  index-sponge:
+    name: Index Sponge Builds
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.project == '' || github.event.inputs.project == 'sponge' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./indexers
+
+      - name: Index Sponge
+        run: bun run index-sponge.ts
+        working-directory: ./indexers
+
+  index-mohist:
+    name: Index Mohist Builds
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.project == '' || github.event.inputs.project == 'mohist' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./indexers
+
+      - name: Index Mohist
+        run: bun run index-mohist.ts
+        working-directory: ./indexers
+
+  index-arclight:
+    name: Index Arclight Builds
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.project == '' || github.event.inputs.project == 'arclight' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./indexers
+
+      - name: Index Arclight
+        run: bun run index-arclight.ts
+        working-directory: ./indexers
+
   revalidate-pages:
     name: Trigger Revalidation
     runs-on: ubuntu-latest
@@ -188,6 +288,11 @@ jobs:
       - index-waterfall
       - index-bungeecord
       - index-pufferfish
+      - index-forge
+      - index-neoforge
+      - index-sponge
+      - index-mohist
+      - index-arclight
     if: always()
     steps:
       - name: Trigger revalidation
@@ -195,5 +300,5 @@ jobs:
           curl -X POST "${{ secrets.REVALIDATION_URL }}" \
             -H "Authorization: Bearer ${{ secrets.REVALIDATION_SECRET }}" \
             -H "Content-Type: application/json" \
-            -d '{"paths": ["/", "/paper", "/vanilla", "/fabric", "/purpur", "/velocity", "/waterfall", "/bungeecord", "/pufferfish"]}'
+            -d '{"paths": ["/", "/paper", "/vanilla", "/fabric", "/purpur", "/velocity", "/waterfall", "/bungeecord", "/pufferfish", "/forge", "/neoforge", "/sponge", "/mohist", "/arclight"]}'
         continue-on-error: true
