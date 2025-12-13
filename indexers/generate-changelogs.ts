@@ -228,17 +228,21 @@ async function fetchMinecraftChangelogContent(
       .replace(/\n\s+/g, "\n")
       .trim();
 
-    // Try to find the changelog section
-    const changelogMatch = text.match(
-      /(Technical Changes|Changes in|New Features|Bug Fixes|Experimental|Fixed bugs|CHANGES|FEATURES)[\s\S]{100,10000}/i
-    );
+    // Try to find the changelog section - prioritize "Technical Changes" as it has most detail
+    let changelogMatch = text.match(/Technical Changes[\s\S]{100,25000}/i);
+    if (!changelogMatch) {
+      // Fallback to other section headers
+      changelogMatch = text.match(
+        /(Resource Pack|Data Pack|Changes in|New Features|Bug Fixes|Experimental|Fixed bugs|CHANGES|FEATURES)[\s\S]{100,20000}/i
+      );
+    }
     if (changelogMatch) {
       text = changelogMatch[0];
     }
 
-    // Limit length
-    if (text.length > 10000) {
-      text = text.slice(0, 10000);
+    // Limit length - allow more for detailed technical changelogs
+    if (text.length > 20000) {
+      text = text.slice(0, 20000);
     }
 
     console.log(`  Extracted ${text.length} chars`);
@@ -273,15 +277,17 @@ Output format (JSON):
   "new_features": ["New features or capabilities added"],
   "bug_fixes": ["Important bug fixes"],
   "api_changes": ["API additions, deprecations, or modifications"],
-  "resource_format_changes": ["BE VERY SPECIFIC about resource pack and data pack changes:
-    - Custom Model Data format changes (e.g., 'CustomModelData changed from int to object with floats[], flags[], strings[], colors[]')
-    - File path changes (e.g., 'textures/item/old.png moved to textures/item/new.png')
-    - JSON format changes (e.g., 'model predicate format changed from X to Y')
-    - New required fields in pack.mcmeta
-    - Atlas/texture changes
-    - Sound file reorganization
-    - Block state format changes
-    - NBT format changes"],
+  "resource_format_changes": ["BE EXTREMELY SPECIFIC about resource pack and data pack changes. Include ALL of these if mentioned:
+    - Model path changes (e.g., 'models/equipment/ moved to equipment/', 'models/item/ no longer used for block redirects')
+    - Item model format changes (e.g., 'overrides section removed from block models', 'new items/*.json format')
+    - CustomModelData format changes (e.g., 'CustomModelData changed from int to object with floats[], flags[], strings[], colors[]')
+    - File renames (e.g., 'broken_elytra renamed to elytra_broken')
+    - Directory restructuring (e.g., 'equipment directory moved one level up')
+    - JSON format changes with before/after examples
+    - pack_format version changes
+    - New/removed/renamed fields in any JSON files
+    - Texture path changes
+    - Sound file reorganization"],
   "developer_notes": ["Important notes for plugin/mod developers"]
 }
 
@@ -303,6 +309,68 @@ If a category has no items, use an empty array.`;
 
   if (officialChangelog) {
     userPrompt += `OFFICIAL MINECRAFT CHANGELOG:\n${officialChangelog}\n\n`;
+    
+    // Pre-extract key resource pack changes for Vanilla changelogs
+    if (project === "vanilla") {
+      const preExtracted: string[] = [];
+      
+      // Extract resource pack version
+      const packVersionMatch = officialChangelog.match(/Resource Pack version is now (\d+)/i);
+      if (packVersionMatch) {
+        preExtracted.push(`Resource Pack version is now ${packVersionMatch[1]}`);
+      }
+      
+      // Extract data pack version
+      const dataVersionMatch = officialChangelog.match(/Data Pack version is now (\d+)/i);
+      if (dataVersionMatch) {
+        preExtracted.push(`Data Pack version is now ${dataVersionMatch[1]}`);
+      }
+      
+      // Extract equipment directory move
+      if (officialChangelog.includes("equipment directory has been moved")) {
+        preExtracted.push("equipment directory has been moved one level up: models/equipment/ becomes equipment/");
+      }
+      
+      // Extract elytra rename
+      if (officialChangelog.includes("broken_elytra") || officialChangelog.includes("elytra_broken")) {
+        preExtracted.push("broken_elytra model and texture has been renamed to elytra_broken");
+      }
+      
+      // Extract overrides removal
+      if (officialChangelog.includes("overrides section has been removed")) {
+        preExtracted.push("The overrides section has been removed from existing block models");
+      }
+      
+      // Extract hardcoded paths removal
+      if (officialChangelog.includes("hardcoded paths")) {
+        preExtracted.push("There are no longer any hardcoded paths in the models directory - models will only be used if referenced by items or blockstates");
+      }
+      
+      // Extract models/item changes
+      if (officialChangelog.includes("Models in models/item") && officialChangelog.includes("have been removed")) {
+        preExtracted.push("Models in models/item that only redirect to a block model have been removed - item models now refer to models/block directly");
+      }
+      
+      // Extract item model format change
+      if (officialChangelog.includes("items/bar.json") || officialChangelog.includes("/assets/[namespace]/items/")) {
+        preExtracted.push("New item model format: item models are now stored in /assets/[namespace]/items/[path].json instead of models/item/");
+      }
+      
+      // Extract CustomModelData changes
+      if (officialChangelog.includes("custom_model_data") && officialChangelog.includes("floats")) {
+        preExtracted.push("CustomModelData component expanded: now has floats[], flags[], strings[], colors[] fields instead of single int");
+      }
+      
+      if (preExtracted.length > 0) {
+        console.log(`  Pre-extracted ${preExtracted.length} resource changes`);
+        userPrompt += `PRE-EXTRACTED RESOURCE FORMAT CHANGES (include these EXACTLY in resource_format_changes):
+${preExtracted.map(p => `- ${p}`).join("\n")}
+
+Additionally, look for any other resource/data pack changes not listed above.\n\n`;
+      } else {
+        console.log(`  No pre-extracted resource changes found`);
+      }
+    }
   }
 
   if (commitMessages) {
