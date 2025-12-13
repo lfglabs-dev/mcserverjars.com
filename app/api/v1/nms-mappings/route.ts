@@ -10,7 +10,7 @@ interface NmsMapping {
 export async function GET() {
   try {
     const supabase = createServiceClient();
-    
+
     const { data, error } = await supabase
       .from("nms_version_mappings")
       .select("minecraft_version, nms_revision, craftbukkit_package")
@@ -57,4 +57,3 @@ export async function GET() {
     );
   }
 }
-
