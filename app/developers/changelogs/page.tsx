@@ -91,16 +91,17 @@ export default async function ChangelogsPage() {
   const versions = Object.keys(byVersion).sort(compareVersions);
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-20 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        {/* Fade to black overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black pointer-events-none" />
+    <div className="min-h-screen relative">
+      {/* Background gradient orbs - extend across entire page */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-48 left-1/4 w-[600px] h-[600px] bg-violet-500/8 rounded-full blur-[120px]" />
+        <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-blue-500/8 rounded-full blur-[100px]" />
+        <div className="absolute top-[400px] left-1/3 w-[400px] h-[400px] bg-violet-500/5 rounded-full blur-[80px]" />
+      </div>
 
-        <div className="relative mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
+      {/* Hero Section */}
+      <div className="relative">
+        <div className="mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 text-sm font-medium mb-6">
             <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
             Developer Tools
@@ -118,7 +119,7 @@ export default async function ChangelogsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-3xl px-4 pb-16 sm:px-6 lg:px-8">
         <ChangelogTimeline versions={versions} byVersion={byVersion} />
 
         {/* API Section */}
