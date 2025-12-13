@@ -110,7 +110,7 @@ export default async function DevelopersPage() {
   }
 
   return (
-    <div className="min-h-screen hero-gradient">
+    <div className="min-h-screen hero-gradient-emerald">
       {/* Hero Section */}
       <div className="mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-6">

@@ -206,32 +206,26 @@ const features = [
 
 export default function DocsPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen hero-gradient-blue">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+      <div className="mx-auto max-w-4xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-medium mb-6">
+          <RiCodeLine className="h-4 w-4" />
+          REST API
+        </div>
 
-        <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-medium mb-6">
-            <RiCodeLine className="h-4 w-4" />
-            REST API
-          </div>
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+          API Documentation
+        </h1>
 
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-            API Documentation
-          </h1>
+        <p className="text-lg text-[var(--text-muted)] max-w-xl mx-auto mb-8">
+          Access Minecraft server jar metadata, download URLs, and version
+          information programmatically.
+        </p>
 
-          <p className="text-lg text-[var(--text-muted)] max-w-xl mx-auto mb-8">
-            Access Minecraft server jar metadata, download URLs, and version
-            information programmatically.
-          </p>
-
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] font-mono text-sm">
-            <span className="text-[var(--text-muted)]">Base URL:</span>
-            <code className="text-blue-500">{API_BASE}</code>
-          </div>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] font-mono text-sm">
+          <span className="text-[var(--text-muted)]">Base URL:</span>
+          <code className="text-blue-500">{API_BASE}</code>
         </div>
       </div>
 

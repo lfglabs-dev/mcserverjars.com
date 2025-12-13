@@ -13,15 +13,18 @@
 
   /* Surfaces */
   --bg-elevated: #ffffff;
-  --bg-subtle: #f6f8fa;
+  --bg-subtle: #f0f2f5;
+  --bg-card: #ffffff;
   --border-subtle: #d8dee4;
   --border-strong: #afb8c1;
+  --border-default: #c9d1d9;
 
   /* Text */
   --text-primary: #1f2328;
   --text-muted: #57606a;
   --text-subtle: #8c959f;
   --text-inverted: #ffffff;
+  --text-secondary: #57606a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,14 +36,17 @@
     --primary-color: #3fb950;
 
     --bg-elevated: #161b22;
-    --bg-subtle: #21262d;
+    --bg-subtle: #161b22;
+    --bg-card: #0d1117;
     --border-subtle: #30363d;
     --border-strong: #484f58;
+    --border-default: #30363d;
 
     --text-primary: #e6edf3;
     --text-muted: #8b949e;
     --text-subtle: #6e7681;
     --text-inverted: #0d1117;
+    --text-secondary: #8b949e;
   }
 }
 
@@ -57,11 +63,35 @@ body {
   font-family: var(--font-sans, system-ui, sans-serif);
 }
 
-/* Subtle top gradient */
+/* Subtle top gradients */
 .hero-gradient {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--primary-color) 4%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.hero-gradient-violet {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #8b5cf6 6%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.hero-gradient-emerald {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #10b981 6%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.hero-gradient-blue {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #3b82f6 6%, transparent) 0%,
     transparent 100%
   );
 }
@@ -71,6 +101,30 @@ body {
     background: linear-gradient(
       180deg,
       color-mix(in srgb, var(--primary-color) 6%, transparent) 0%,
+      transparent 100%
+    );
+  }
+  
+  .hero-gradient-violet {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #8b5cf6 8%, transparent) 0%,
+      transparent 100%
+    );
+  }
+  
+  .hero-gradient-emerald {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #10b981 8%, transparent) 0%,
+      transparent 100%
+    );
+  }
+  
+  .hero-gradient-blue {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #3b82f6 8%, transparent) 0%,
       transparent 100%
     );
   }

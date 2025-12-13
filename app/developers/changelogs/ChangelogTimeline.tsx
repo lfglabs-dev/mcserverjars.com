@@ -86,7 +86,7 @@ export function ChangelogTimeline({ versions, byVersion }: Props) {
             className={`rounded-xl border transition-all ${
               isExpanded
                 ? "border-[var(--border-default)] bg-[var(--bg-card)]"
-                : "border-[var(--border-subtle)] bg-[var(--bg-card)]/50 hover:bg-[var(--bg-card)]"
+                : "border-[var(--border-subtle)] bg-[var(--bg-card)] hover:border-[var(--border-default)]"
             }`}
           >
             {/* Version Header */}
@@ -157,7 +157,7 @@ export function ChangelogTimeline({ versions, byVersion }: Props) {
                       className={`rounded-lg border transition-all ${
                         projectExpanded
                           ? "border-[var(--border-default)] bg-[var(--bg-subtle)]"
-                          : "border-transparent bg-[var(--bg-subtle)]/50 hover:bg-[var(--bg-subtle)]"
+                          : "border-transparent bg-[var(--bg-subtle)] hover:border-[var(--border-subtle)]"
                       }`}
                     >
                       {/* Project Header - Clickable */}
