@@ -90,6 +90,25 @@ export interface Database {
           Database["public"]["Tables"]["jar_sync_logs"]["Insert"]
         >;
       };
+      nms_version_mappings: {
+        Row: {
+          id: string;
+          minecraft_version: string;
+          nms_revision: string;
+          craftbukkit_package: string;
+          spigot_version: string | null;
+          is_latest_for_revision: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["nms_version_mappings"]["Row"],
+          "id" | "created_at" | "updated_at"
+        >;
+        Update: Partial<
+          Database["public"]["Tables"]["nms_version_mappings"]["Insert"]
+        >;
+      };
     };
   };
 }

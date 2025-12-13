@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-const API_BASE = "https://api.mcserverjars.com";
+const API_BASE = "https://mcserverjars.com/api";
 
 interface Endpoint {
   method: "GET" | "POST";
