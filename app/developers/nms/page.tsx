@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { NmsLookup } from "./NmsLookup";
 
-export const revalidate = 3600;
+export const revalidate = 300; // 5 minutes
 
 export const metadata: Metadata = {
   title:

@@ -34,15 +34,22 @@ export async function GET() {
       byRevision[mapping.nms_revision].push(mapping.minecraft_version);
     }
 
-    return NextResponse.json({
-      mappings: mappings.map((m) => ({
-        minecraft_version: m.minecraft_version,
-        nms_revision: m.nms_revision,
-        craftbukkit_package: m.craftbukkit_package,
-      })),
-      by_revision: byRevision,
-      by_version: byVersion,
-    });
+    return NextResponse.json(
+      {
+        mappings: mappings.map((m) => ({
+          minecraft_version: m.minecraft_version,
+          nms_revision: m.nms_revision,
+          craftbukkit_package: m.craftbukkit_package,
+        })),
+        by_revision: byRevision,
+        by_version: byVersion,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Internal server error" },

@@ -30,11 +30,18 @@ export async function GET(
 
     const mapping = data as unknown as NmsMapping;
 
-    return NextResponse.json({
-      minecraft_version: mapping.minecraft_version,
-      nms_revision: mapping.nms_revision,
-      craftbukkit_package: mapping.craftbukkit_package,
-    });
+    return NextResponse.json(
+      {
+        minecraft_version: mapping.minecraft_version,
+        nms_revision: mapping.nms_revision,
+        craftbukkit_package: mapping.craftbukkit_package,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Internal server error" },
