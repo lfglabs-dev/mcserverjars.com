@@ -182,7 +182,7 @@ export default async function VersionPage({ params }: PageProps) {
           {/* Builds */}
           <section>
             <h2 className="text-lg font-semibold mb-4">All Builds</h2>
-            <BuildTable projectSlug={project.slug} builds={builds} />
+            <BuildTable builds={builds} />
           </section>
 
           {/* SEO Content */}

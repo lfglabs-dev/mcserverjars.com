@@ -4,11 +4,10 @@ import { formatDate, formatBytes } from "@/lib/utils";
 import { RiDownloadLine } from "@remixicon/react";
 
 interface BuildTableProps {
-  projectSlug: string;
   builds: JarBuildWithVersion[];
 }
 
-export function BuildTable({ projectSlug, builds }: BuildTableProps) {
+export function BuildTable({ builds }: BuildTableProps) {
   if (builds.length === 0) {
     return (
       <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-8 text-center">
