@@ -15,6 +15,7 @@ import {
   getProjectBySlugOptional,
   upsertProject,
 } from "./lib/supabase";
+import { fetchJson } from "./lib/http";
 
 const PAPERMC_API = "https://api.papermc.io/v2";
 const PROJECT_SLUG = "folia";
@@ -41,31 +42,60 @@ interface PaperMcBuild {
   };
 }
 
+function parseVersionsResponse(value: unknown): PaperMcProjectResponse {
+  if (!value || typeof value !== "object") return { versions: [] };
+  const maybe = value as { versions?: unknown };
+  if (!Array.isArray(maybe.versions)) return { versions: [] };
+  return {
+    versions: maybe.versions.filter((v): v is string => typeof v === "string"),
+  };
+}
+
+function parseBuildsResponse(value: unknown): PaperMcVersionResponse {
+  if (!value || typeof value !== "object") return { builds: [] };
+  const maybe = value as { builds?: unknown };
+  if (!Array.isArray(maybe.builds)) return { builds: [] };
+  return { builds: maybe.builds.filter((b): b is number => typeof b === "number") };
+}
+
+function parseBuildDetails(value: unknown): PaperMcBuild | null {
+  if (!value || typeof value !== "object") return null;
+  const maybe = value as Partial<PaperMcBuild>;
+  if (
+    typeof maybe.build !== "number" ||
+    typeof maybe.time !== "string" ||
+    typeof maybe.channel !== "string" ||
+    typeof maybe.promoted !== "boolean" ||
+    !Array.isArray(maybe.changes)
+  ) {
+    return null;
+  }
+  return maybe as PaperMcBuild;
+}
+
 async function fetchVersions(): Promise<string[]> {
-  const res = await fetch(`${PAPERMC_API}/projects/${PROJECT_SLUG}`);
-  if (!res.ok) return [];
-  const data = (await res.json()) as PaperMcProjectResponse;
-  return data.versions || [];
+  const data = await fetchJson(`${PAPERMC_API}/projects/${PROJECT_SLUG}`, {
+    parse: parseVersionsResponse,
+  });
+  return data.versions;
 }
 
 async function fetchBuildsForVersion(version: string): Promise<number[]> {
-  const res = await fetch(
-    `${PAPERMC_API}/projects/${PROJECT_SLUG}/versions/${version}`
+  const data = await fetchJson(
+    `${PAPERMC_API}/projects/${PROJECT_SLUG}/versions/${version}`,
+    { parse: parseBuildsResponse }
   );
-  if (!res.ok) return [];
-  const data = (await res.json()) as PaperMcVersionResponse;
-  return data.builds || [];
+  return data.builds;
 }
 
 async function fetchBuildDetails(
   version: string,
   build: number
 ): Promise<PaperMcBuild | null> {
-  const res = await fetch(
-    `${PAPERMC_API}/projects/${PROJECT_SLUG}/versions/${version}/builds/${build}`
+  return await fetchJson(
+    `${PAPERMC_API}/projects/${PROJECT_SLUG}/versions/${version}/builds/${build}`,
+    { parse: parseBuildDetails }
   );
-  if (!res.ok) return null;
-  return (await res.json()) as PaperMcBuild;
 }
 
 async function ensureFoliaProject() {

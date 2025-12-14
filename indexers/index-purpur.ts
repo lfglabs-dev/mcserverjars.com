@@ -12,6 +12,7 @@ import {
   clearLatestFlags,
   markLatestBuilds,
 } from "./lib/supabase";
+import { fetchJson } from "./lib/http";
 
 const PURPUR_API = "https://api.purpurmc.org/v2";
 
@@ -35,6 +36,62 @@ interface PurpurBuild {
   md5: string;
 }
 
+function parsePurpurVersions(value: unknown): PurpurVersions {
+  if (!value || typeof value !== "object") return { versions: [] };
+  const maybe = value as { versions?: unknown };
+  if (!Array.isArray(maybe.versions)) return { versions: [] };
+  return {
+    versions: maybe.versions.filter((v): v is string => typeof v === "string"),
+  };
+}
+
+function parsePurpurBuilds(value: unknown): PurpurBuilds {
+  if (!value || typeof value !== "object") {
+    return { builds: { all: [], latest: "" } };
+  }
+  const maybe = value as { builds?: unknown };
+  const buildsObj =
+    maybe.builds && typeof maybe.builds === "object"
+      ? (maybe.builds as Record<string, unknown>)
+      : {};
+  const allRaw = buildsObj.all;
+  const latestRaw = buildsObj.latest;
+  const all = Array.isArray(allRaw)
+    ? allRaw.filter((v): v is string => typeof v === "string")
+    : [];
+  const latest = typeof latestRaw === "string" ? latestRaw : "";
+  return { builds: { all, latest } };
+}
+
+function parsePurpurBuild(value: unknown): PurpurBuild | null {
+  if (!value || typeof value !== "object") return null;
+  const maybe = value as Partial<PurpurBuild>;
+  if (
+    typeof maybe.build !== "string" ||
+    typeof maybe.result !== "string" ||
+    typeof maybe.timestamp !== "number" ||
+    typeof maybe.duration !== "number" ||
+    typeof maybe.md5 !== "string" ||
+    !Array.isArray(maybe.commits)
+  ) {
+    return null;
+  }
+  // Ensure commit entries are objects to avoid crashes in map()
+  maybe.commits = maybe.commits.filter(
+    (c): c is PurpurBuild["commits"][number] => {
+      if (!c || typeof c !== "object") return false;
+      const obj = c as Record<string, unknown>;
+      return (
+        typeof obj.description === "string" &&
+        typeof obj.author === "string" &&
+        typeof obj.hash === "string" &&
+        typeof obj.timestamp === "number"
+      );
+    }
+  );
+  return maybe as PurpurBuild;
+}
+
 async function main() {
   console.log("Starting Purpur indexer...");
 
@@ -48,8 +105,9 @@ async function main() {
   let buildsAdded = 0;
 
   try {
-    const versionsRes = await fetch(`${PURPUR_API}/purpur`);
-    const versionsData: PurpurVersions = await versionsRes.json();
+    const versionsData = await fetchJson(`${PURPUR_API}/purpur`, {
+      parse: parsePurpurVersions,
+    });
 
     console.log(`Found ${versionsData.versions.length} Purpur versions`);
 
@@ -65,15 +123,19 @@ async function main() {
       const mcVersionId = await getOrCreateMinecraftVersion(version);
 
       // Get builds for this version
-      const buildsRes = await fetch(`${PURPUR_API}/purpur/${version}`);
-      const buildsData: PurpurBuilds = await buildsRes.json();
+      const buildsData = await fetchJson(`${PURPUR_API}/purpur/${version}`, {
+        parse: parsePurpurBuilds,
+      });
 
       // Get last 5 builds
       const recentBuilds = buildsData.builds.all.slice(-5);
 
       for (const buildNum of recentBuilds) {
-        const buildRes = await fetch(`${PURPUR_API}/purpur/${version}/${buildNum}`);
-        const buildDetails: PurpurBuild = await buildRes.json();
+        const buildDetails = await fetchJson(
+          `${PURPUR_API}/purpur/${version}/${buildNum}`,
+          { parse: parsePurpurBuild }
+        );
+        if (!buildDetails) continue;
 
         const buildNumber = parseInt(buildNum, 10);
         const downloadUrl = `${PURPUR_API}/purpur/${version}/${buildNum}/download`;

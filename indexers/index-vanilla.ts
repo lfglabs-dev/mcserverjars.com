@@ -12,6 +12,7 @@ import {
   clearLatestFlags,
   markLatestBuilds,
 } from "./lib/supabase";
+import { fetchJson } from "./lib/http";
 
 const VERSION_MANIFEST =
   "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
@@ -40,6 +41,77 @@ interface VersionDetails {
   };
 }
 
+function parseVersionManifest(value: unknown): VersionManifest {
+  if (!value || typeof value !== "object") {
+    return { latest: { release: "", snapshot: "" }, versions: [] };
+  }
+  const maybe = value as Partial<VersionManifest>;
+  const versionsRaw = Array.isArray(maybe.versions) ? maybe.versions : [];
+  const versions = versionsRaw
+    .filter((v): v is VersionManifest["versions"][number] => {
+      if (!v || typeof v !== "object") return false;
+      const obj = v as Record<string, unknown>;
+      return (
+        typeof obj.id === "string" &&
+        typeof obj.type === "string" &&
+        typeof obj.url === "string" &&
+        typeof obj.releaseTime === "string" &&
+        typeof obj.sha1 === "string"
+      );
+    })
+    .map((v) => v);
+
+  const latest =
+    maybe.latest && typeof maybe.latest === "object"
+      ? {
+          release:
+            typeof (maybe.latest as Record<string, unknown>).release === "string"
+              ? ((maybe.latest as Record<string, unknown>).release as string)
+              : "",
+          snapshot:
+            typeof (maybe.latest as Record<string, unknown>).snapshot === "string"
+              ? ((maybe.latest as Record<string, unknown>).snapshot as string)
+              : "",
+        }
+      : { release: "", snapshot: "" };
+
+  return { latest, versions };
+}
+
+function parseVersionDetails(value: unknown): VersionDetails {
+  if (!value || typeof value !== "object") {
+    return { downloads: {} };
+  }
+  const maybe = value as { downloads?: unknown };
+  const downloads =
+    maybe.downloads && typeof maybe.downloads === "object"
+      ? (maybe.downloads as Record<string, unknown>)
+      : {};
+  const server =
+    downloads.server && typeof downloads.server === "object"
+      ? (downloads.server as Record<string, unknown>)
+      : null;
+
+  if (
+    server &&
+    typeof server.sha1 === "string" &&
+    typeof server.size === "number" &&
+    typeof server.url === "string"
+  ) {
+    return {
+      downloads: {
+        server: {
+          sha1: server.sha1,
+          size: server.size,
+          url: server.url,
+        },
+      },
+    };
+  }
+
+  return { downloads: {} };
+}
+
 async function main() {
   console.log("Starting Vanilla indexer...");
 
@@ -53,8 +125,9 @@ async function main() {
   let buildsAdded = 0;
 
   try {
-    const manifestRes = await fetch(VERSION_MANIFEST);
-    const manifest: VersionManifest = await manifestRes.json();
+    const manifest = await fetchJson(VERSION_MANIFEST, {
+      parse: parseVersionManifest,
+    });
 
     console.log(`Found ${manifest.versions.length} Minecraft versions`);
 
@@ -73,8 +146,7 @@ async function main() {
       console.log(`Processing Vanilla ${version.id}...`);
 
       // Fetch version details to get server download
-      const detailsRes = await fetch(version.url);
-      const details: VersionDetails = await detailsRes.json();
+      const details = await fetchJson(version.url, { parse: parseVersionDetails });
 
       if (!details.downloads.server) {
         console.log(`  No server available for ${version.id}`);

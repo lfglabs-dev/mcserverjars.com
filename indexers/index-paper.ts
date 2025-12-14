@@ -13,6 +13,7 @@ import {
   clearLatestFlags,
   markLatestBuilds,
 } from "./lib/supabase";
+import { fetchJson } from "./lib/http";
 
 const PAPER_API = "https://api.papermc.io/v2";
 
@@ -35,27 +36,65 @@ interface PaperBuild {
   };
 }
 
+function parseVersionsResponse(value: unknown): { versions: string[] } {
+  if (!value || typeof value !== "object") {
+    return { versions: [] };
+  }
+  const maybe = value as { versions?: unknown };
+  const versions = maybe.versions;
+  if (!Array.isArray(versions)) return { versions: [] };
+  return { versions: versions.filter((v): v is string => typeof v === "string") };
+}
+
+function parseBuildsResponse(value: unknown): { builds: number[] } {
+  if (!value || typeof value !== "object") {
+    return { builds: [] };
+  }
+  const maybe = value as { builds?: unknown };
+  const builds = maybe.builds;
+  if (!Array.isArray(builds)) return { builds: [] };
+  return { builds: builds.filter((b): b is number => typeof b === "number") };
+}
+
+function parseBuildDetails(value: unknown): PaperBuild | null {
+  if (!value || typeof value !== "object") return null;
+  const maybe = value as Partial<PaperBuild>;
+  if (
+    typeof maybe.build !== "number" ||
+    typeof maybe.time !== "string" ||
+    typeof maybe.channel !== "string" ||
+    typeof maybe.promoted !== "boolean" ||
+    !maybe.downloads?.application ||
+    typeof maybe.downloads.application.name !== "string" ||
+    typeof maybe.downloads.application.sha256 !== "string" ||
+    !Array.isArray(maybe.changes)
+  ) {
+    return null;
+  }
+  return maybe as PaperBuild;
+}
+
 async function fetchVersions(): Promise<string[]> {
-  const res = await fetch(`${PAPER_API}/projects/paper`);
-  const data = await res.json();
-  return data.versions || [];
+  const data = await fetchJson(`${PAPER_API}/projects/paper`, {
+    parse: parseVersionsResponse,
+  });
+  return data.versions;
 }
 
 async function fetchBuildsForVersion(version: string): Promise<number[]> {
-  const res = await fetch(`${PAPER_API}/projects/paper/versions/${version}`);
-  const data = await res.json();
-  return data.builds || [];
+  const data = await fetchJson(`${PAPER_API}/projects/paper/versions/${version}`, {
+    parse: parseBuildsResponse,
+  });
+  return data.builds;
 }
 
 async function fetchBuildDetails(
   version: string,
   build: number
 ): Promise<PaperBuild | null> {
-  const res = await fetch(
-    `${PAPER_API}/projects/paper/versions/${version}/builds/${build}`
-  );
-  if (!res.ok) return null;
-  return res.json();
+  return await fetchJson(`${PAPER_API}/projects/paper/versions/${version}/builds/${build}`, {
+    parse: parseBuildDetails,
+  });
 }
 
 async function main() {
