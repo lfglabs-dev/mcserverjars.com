@@ -43,6 +43,9 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
+# smoke / local test artifacts
+.smoke/
+
 # Vercel
 .vercel
 
