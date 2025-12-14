@@ -15,7 +15,7 @@ import {
   getProjectBySlugOptional,
   upsertProject,
 } from "./lib/supabase";
-import { fetchJson } from "./lib/http";
+import { fetchJson, HttpError } from "./lib/http";
 
 const PAPERMC_API = "https://api.papermc.io/v2";
 const PROJECT_SLUG = "folia";
@@ -73,6 +73,12 @@ function parseBuildDetails(value: unknown): PaperMcBuild | null {
   return maybe as PaperMcBuild;
 }
 
+function isStableMinecraftVersion(version: string): boolean {
+  // PaperMC sometimes includes pre/rc tags in the versions list,
+  // but those do not always expose a corresponding `/versions/{version}` endpoint.
+  return /^\d+\.\d+(\.\d+)?$/.test(version);
+}
+
 async function fetchVersions(): Promise<string[]> {
   const data = await fetchJson(`${PAPERMC_API}/projects/${PROJECT_SLUG}`, {
     parse: parseVersionsResponse,
@@ -81,11 +87,19 @@ async function fetchVersions(): Promise<string[]> {
 }
 
 async function fetchBuildsForVersion(version: string): Promise<number[]> {
-  const data = await fetchJson(
-    `${PAPERMC_API}/projects/${PROJECT_SLUG}/versions/${version}`,
-    { parse: parseBuildsResponse }
-  );
-  return data.builds;
+  try {
+    const data = await fetchJson(
+      `${PAPERMC_API}/projects/${PROJECT_SLUG}/versions/${version}`,
+      { parse: parseBuildsResponse }
+    );
+    return data.builds;
+  } catch (error) {
+    if (error instanceof HttpError && error.status === 404) {
+      console.warn(`Skipping ${PROJECT_SLUG} version ${version} (no builds endpoint)`);
+      return [];
+    }
+    throw error;
+  }
 }
 
 async function fetchBuildDetails(
@@ -152,19 +166,23 @@ async function main() {
 
   try {
     const versions = await fetchVersions();
-    console.log(`Found ${versions.length} Folia versions`);
+    const stableVersions = versions.filter(isStableMinecraftVersion);
+    console.log(
+      `Found ${versions.length} Folia versions (${stableVersions.length} stable)`
+    );
 
     // Clear existing latest flags
     await clearLatestFlags(project.id);
 
     // Process recent versions (limit for efficiency)
-    const recentVersions = versions.slice(-20); // Last 20 versions
+    const recentVersions = stableVersions.slice(-20); // Last 20 stable versions
 
     for (const version of recentVersions) {
       console.log(`Processing Folia ${version}...`);
 
       const mcVersionId = await getOrCreateMinecraftVersion(version);
       const builds = await fetchBuildsForVersion(version);
+      if (builds.length === 0) continue;
 
       // Get last 10 builds per version to limit API calls
       const recentBuilds = builds.slice(-10);

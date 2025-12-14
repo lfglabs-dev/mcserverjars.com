@@ -13,7 +13,7 @@ import {
   clearLatestFlags,
   markLatestBuilds,
 } from "./lib/supabase";
-import { fetchJson } from "./lib/http";
+import { fetchJson, HttpError } from "./lib/http";
 
 const PAPER_API = "https://api.papermc.io/v2";
 
@@ -74,6 +74,13 @@ function parseBuildDetails(value: unknown): PaperBuild | null {
   return maybe as PaperBuild;
 }
 
+function isStableMinecraftVersion(version: string): boolean {
+  // PaperMC sometimes includes pre/rc tags (e.g. `1.21.11-rc3`) in the versions list,
+  // but those do not have a corresponding `/versions/{version}` endpoint.
+  // We only index stable release versions here.
+  return /^\d+\.\d+(\.\d+)?$/.test(version);
+}
+
 async function fetchVersions(): Promise<string[]> {
   const data = await fetchJson(`${PAPER_API}/projects/paper`, {
     parse: parseVersionsResponse,
@@ -82,10 +89,19 @@ async function fetchVersions(): Promise<string[]> {
 }
 
 async function fetchBuildsForVersion(version: string): Promise<number[]> {
-  const data = await fetchJson(`${PAPER_API}/projects/paper/versions/${version}`, {
-    parse: parseBuildsResponse,
-  });
-  return data.builds;
+  try {
+    const data = await fetchJson(`${PAPER_API}/projects/paper/versions/${version}`, {
+      parse: parseBuildsResponse,
+    });
+    return data.builds;
+  } catch (error) {
+    // PaperMC occasionally advertises versions that don't expose this endpoint (404).
+    if (error instanceof HttpError && error.status === 404) {
+      console.warn(`Skipping Paper version ${version} (no builds endpoint)`);
+      return [];
+    }
+    throw error;
+  }
 }
 
 async function fetchBuildDetails(
@@ -112,19 +128,23 @@ async function main() {
 
   try {
     const versions = await fetchVersions();
-    console.log(`Found ${versions.length} Paper versions`);
+    const stableVersions = versions.filter(isStableMinecraftVersion);
+    console.log(
+      `Found ${versions.length} Paper versions (${stableVersions.length} stable)`
+    );
 
     // Clear existing latest flags
     await clearLatestFlags(project.id);
 
     // Process recent versions (limit for efficiency)
-    const recentVersions = versions.slice(-20); // Last 20 versions
+    const recentVersions = stableVersions.slice(-20); // Last 20 stable versions
 
     for (const version of recentVersions) {
       console.log(`Processing Paper ${version}...`);
 
       const mcVersionId = await getOrCreateMinecraftVersion(version);
       const builds = await fetchBuildsForVersion(version);
+      if (builds.length === 0) continue;
 
       // Get last 10 builds per version to limit API calls
       const recentBuilds = builds.slice(-10);
