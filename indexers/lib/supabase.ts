@@ -55,6 +55,58 @@ export async function getProjectBySlug(slug: string) {
   return data;
 }
 
+export async function getProjectBySlugOptional(slug: string) {
+  const { data, error } = await supabase
+    .from("jar_projects")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ?? null;
+}
+
+export type JarProjectCategory = "server" | "proxy" | "modloader" | "hybrid";
+
+export type JarProjectUpsert = {
+  slug: string;
+  name: string;
+  description?: string | null;
+  website_url?: string | null;
+  source_url?: string | null;
+  api_url?: string | null;
+  logo_url?: string | null;
+  category: JarProjectCategory;
+  requires_build: boolean;
+  is_active: boolean;
+  display_order: number;
+};
+
+export async function upsertProject(project: JarProjectUpsert) {
+  const existing = await getProjectBySlugOptional(project.slug);
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from("jar_projects")
+      .update(project)
+      .eq("id", existing.id)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  const { data, error } = await supabase
+    .from("jar_projects")
+    .insert(project)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function upsertBuild(build: {
   project_id: string;
   minecraft_version_id: string;
@@ -72,12 +124,9 @@ export async function upsertBuild(build: {
   is_latest_for_mc_version?: boolean;
   is_latest_overall?: boolean;
 }) {
-  const { error } = await supabase.from("jar_builds").upsert(
-    build,
-    {
-      onConflict: "project_id,minecraft_version_id,build_number",
-    }
-  );
+  const { error } = await supabase.from("jar_builds").upsert(build, {
+    onConflict: "project_id,minecraft_version_id,build_number",
+  });
 
   if (error) {
     console.error("Failed to upsert build:", error);
@@ -99,7 +148,11 @@ export async function createSyncLog(projectId: string) {
 export async function updateSyncLog(
   logId: string,
   status: "success" | "failed",
-  stats: { builds_added?: number; builds_updated?: number; error_message?: string }
+  stats: {
+    builds_added?: number;
+    builds_updated?: number;
+    error_message?: string;
+  }
 ) {
   await supabase
     .from("jar_sync_logs")
@@ -134,7 +187,11 @@ export async function markLatestBuilds(projectId: string) {
   if (!builds || builds.length === 0) return;
 
   const latestByVersion = new Map<string, string>();
-  let overallLatest: { id: string; buildNumber: number; releaseDate: string | null } | null = null;
+  let overallLatest: {
+    id: string;
+    buildNumber: number;
+    releaseDate: string | null;
+  } | null = null;
 
   for (const build of builds) {
     // Track latest for each MC version
@@ -171,4 +228,3 @@ export async function markLatestBuilds(projectId: string) {
       .eq("id", overallLatest.id);
   }
 }
-

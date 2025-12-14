@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "index-paper": "bun run index-paper.ts",
+    "index-folia": "bun run index-folia.ts",
     "index-vanilla": "bun run index-vanilla.ts",
     "index-purpur": "bun run index-purpur.ts",
     "index-fabric": "bun run index-fabric.ts",
-    "index-all": "bun run index-paper.ts && bun run index-vanilla.ts && bun run index-purpur.ts && bun run index-fabric.ts"
+    "index-all": "bun run index-paper.ts && bun run index-folia.ts && bun run index-vanilla.ts && bun run index-purpur.ts && bun run index-fabric.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
