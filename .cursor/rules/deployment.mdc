@@ -1,0 +1,44 @@
+---
+description: MCServerJars deployment notes (frontend Vercel, backend VPS/Docker, indexers scheduling).
+alwaysApply: false
+---
+
+## MCServerJars deployment
+
+### Frontend (Vercel)
+
+- Project root: `mcserverjars.com/`
+- Configure env vars (Supabase + optional service role) from `secrets.json`.
+
+### Backend API (VPS / Docker)
+
+Project root: `mcserverjars.com/backend/`
+
+The backend expects at minimum:
+
+- `DATABASE_URL` (required)
+- `SUPABASE_URL` (defaults exist)
+- `SUPABASE_SERVICE_KEY` or `SUPABASE_SERVICE_ROLE_KEY`
+- `PORT` (default 3001)
+
+Dockerfile exists for production builds. Typical flow:
+
+```bash
+cd mcserverjars.com/backend
+docker build -t mcserverjars-api .
+docker run --rm -p 3001:3001 --env-file .env mcserverjars-api
+```
+
+### Indexers (cron/CI)
+
+Project root: `mcserverjars.com/indexers/`
+
+Indexers typically run on a schedule (cron or CI runner). They require:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `OPENAI_API_KEY` (only for changelog generation)
+- `API_URL` (optional; defaults to `https://api.mcserverjars.com`)
+
+These map to `secrets.json` (`shared.supabase.*`, `shared.openai.*`, `projects.mcserverjars.indexers.*`).
+

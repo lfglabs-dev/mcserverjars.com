@@ -1,3 +1,26 @@
+---
+description: MCServerJars architecture (SEO website + Rust API + Bun indexers).
+alwaysApply: false
+---
+
+## MCServerJars: project map
+
+- **Frontend (Next.js)**: `mcserverjars.com/app/`
+  - SEO-first pages (`/[project]`, `/sitemap.ts`, `/robots.ts`)
+  - Shared helpers in `mcserverjars.com/lib/`
+- **Backend API (Rust/Axum)**: `mcserverjars.com/backend/`
+  - Serves `/v1/*` JSON endpoints + `/jars/*` downloads
+  - Uses Postgres + Supabase admin access for storage/publishing
+- **Indexers (Bun TS)**: `mcserverjars.com/indexers/`
+  - Periodic ingestion scripts for Paper/Spigot/Vanilla/etc
+  - Optional changelog generation (uses OpenAI)
+
+### Agent guidance
+
+- Treat SEO as a first-class feature: preserve stable URLs, metadata, structured data, and sitemap behavior.
+- If you change backend responses, update corresponding frontend data consumers and any docs under `mcserverjars.com/app/docs/`.
+- Indexers should be idempotent and safe to run repeatedly.
+
 ## MCServerJars Architecture
 
 - **Framework**: Next.js 15 (App Router) + React 19 + TypeScript 5
