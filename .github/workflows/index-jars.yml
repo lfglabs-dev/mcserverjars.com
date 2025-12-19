@@ -3,7 +3,7 @@ name: Index Jar Metadata
 on:
   schedule:
     # Run every 30 minutes for metadata indexers
-    - cron: "*/30 * * * *"
+    - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
       project:
