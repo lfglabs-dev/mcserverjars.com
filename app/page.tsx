@@ -47,9 +47,38 @@ export default async function HomePage() {
 
   const categoryOrder = ["server", "proxy", "modloader", "hybrid"];
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "MCServerJars",
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/og-image.jpg`,
+    description: siteConfig.metaDescription,
+    sameAs: ["https://github.com/lfglabs-dev/mcserverjars.com"],
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "MCServerJars",
+    url: siteConfig.url,
+    description: siteConfig.metaDescription,
+    publisher: {
+      "@type": "Organization",
+      name: "MCServerJars",
+    },
+  };
+
   return (
-    <div className="hero-gradient min-h-screen">
-      {/* Hero */}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([organizationSchema, websiteSchema]),
+        }}
+      />
+      <div className="hero-gradient min-h-screen">
+        {/* Hero */}
       <section className="pt-28 pb-12 px-4 sm:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -150,6 +179,7 @@ export default async function HomePage() {
           </p>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

@@ -100,6 +100,16 @@ export default async function VersionPage({ params }: PageProps) {
     fileSize: latestBuild?.file_size
       ? `${Math.round(latestBuild.file_size / 1024 / 1024)} MB`
       : undefined,
+    author: {
+      "@type": "Organization",
+      name: "MCServerJars",
+      url: siteConfig.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "MCServerJars",
+      url: siteConfig.url,
+    },
     offers: {
       "@type": "Offer",
       price: "0",

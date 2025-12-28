@@ -44,11 +44,20 @@ export const metadata: Metadata = {
     title: siteConfig.metaTitle,
     description: siteConfig.metaDescription,
     siteName: siteConfig.name,
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "MCServerJars - Minecraft Server Jar Downloads",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.metaTitle,
     description: siteConfig.metaDescription,
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
