@@ -1,0 +1,72 @@
+---
+title: "Paper vs Spigot: Which Minecraft Server Software Should You Use?"
+description: "Compare Paper and Spigot server software. Learn the differences in performance, plugin compatibility, and features to choose the best option for your Minecraft server."
+publishedAt: "2025-12-28"
+updatedAt: "2025-12-28"
+author: "mcserverjars"
+category: "comparisons"
+tags: ["paper", "spigot", "comparison", "performance"]
+readingTime: 5
+schemaType: "Article"
+---
+
+## Quick Answer
+
+**Use Paper** if you want the best performance and stability. Paper is a fork of Spigot that includes additional optimizations and bug fixes.
+
+**Use Spigot** if you need maximum compatibility with older plugins or prefer a more conservative approach to changes.
+
+## What is Spigot?
+
+Spigot is a modified Minecraft server that improves performance over the vanilla server. It was created as a fork of CraftBukkit and has been the foundation for plugin development since 2012.
+
+Key features of Spigot:
+
+- Plugin support via the Bukkit API
+- Configuration options for server optimization
+- Active community and plugin ecosystem
+- Must be built using BuildTools
+
+## What is Paper?
+
+Paper is a fork of Spigot that focuses on performance improvements and bug fixes. It maintains full compatibility with Spigot plugins while adding its own API extensions.
+
+Key features of Paper:
+
+- Significant performance improvements over Spigot
+- Fixes for vanilla Minecraft bugs and exploits
+- Extended API for plugin developers
+- Pre-built jars available for download
+- Active development with frequent updates
+
+## Performance Comparison
+
+Paper consistently outperforms Spigot in benchmarks. The Paper team has implemented numerous optimizations including:
+
+- Async chunk loading and saving
+- Optimized entity tracking
+- Improved tick scheduling
+- Better memory management
+
+For most servers, Paper will handle 20-50% more players at the same TPS compared to Spigot.
+
+## Plugin Compatibility
+
+Paper is fully compatible with Spigot plugins. Any plugin that works on Spigot will work on Paper. However, Paper also offers its own extended API that some plugins take advantage of for better performance.
+
+## Which Should You Choose?
+
+For the vast majority of servers, **Paper is the better choice**. It offers better performance, more bug fixes, and is just as easy to set up.
+
+Consider Spigot only if:
+
+- You have a specific plugin that requires Spigot
+- You need behavior that Paper has changed for stability
+- You prefer building your server jar yourself
+
+## Download Links
+
+Ready to get started? Download the latest versions:
+
+<DownloadButton project="paper" />
+<DownloadButton project="spigot" variant="secondary" />

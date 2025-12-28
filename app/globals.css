@@ -33,7 +33,7 @@
     --foreground: #e6edf3;
     --foreground-secondary: #8b949e;
 
-    --primary-color: #3fb950;
+    --primary-color: #34d399;
 
     --bg-elevated: #161b22;
     --bg-subtle: #161b22;
@@ -146,6 +146,14 @@ a {
 }
 
 /* Prose overrides for SEO sections */
+.prose-custom h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
 .prose-custom h2 {
   font-size: 1.25rem;
   font-weight: 600;
@@ -162,6 +170,21 @@ a {
   color: var(--foreground);
 }
 
+.prose-custom h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.prose-custom .lead {
+  font-size: 1.125rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
 .prose-custom p {
   margin-top: 0;
   margin-bottom: 1rem;
@@ -173,6 +196,14 @@ a {
   margin-top: 0;
   margin-bottom: 1rem;
   padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.prose-custom ol {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
 }
 
 .prose-custom li {
@@ -183,6 +214,53 @@ a {
 .prose-custom strong {
   color: var(--foreground);
   font-weight: 500;
+}
+
+.prose-custom blockquote {
+  border-left: 3px solid var(--primary-color);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.prose-custom table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.prose-custom th,
+.prose-custom td {
+  border: 1px solid var(--border-subtle);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.prose-custom th {
+  background: var(--bg-subtle);
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.prose-custom td {
+  color: var(--text-muted);
+}
+
+.prose-custom hr {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin: 2rem 0;
+}
+
+.prose-custom a:not([class*="bg-"]) {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.prose-custom a:not([class*="bg-"]):hover {
+  text-decoration: underline;
 }
 
 /* Scrollbar */

@@ -1,0 +1,55 @@
+---
+title: "How to Install a Spigot Minecraft Server"
+description: "Install Spigot to run plugins on your Minecraft server. Download Spigot, configure your server, and start playing quickly."
+publishedAt: "2025-12-28"
+updatedAt: "2025-12-28"
+author: "mcserverjars"
+category: "setup"
+tags: ["spigot", "plugins", "setup", "bukkit"]
+schemaType: "HowTo"
+howToSteps:
+  - name: "Install Java"
+    text: "Install Java 21 for Minecraft 1.20.5+ or Java 17 for older versions."
+  - name: "Download Spigot"
+    text: "Download the latest Spigot jar from MCServerJars."
+  - name: "Create a server folder"
+    text: "Place the jar in a new folder and rename it to server.jar."
+  - name: "Run the server"
+    text: "Start the server once to generate files."
+  - name: "Accept the EULA"
+    text: "Set eula=true in eula.txt."
+  - name: "Add plugins"
+    text: "Drop plugin jars into the plugins folder and restart."
+---
+
+## Step 1: Download Spigot
+
+<DownloadButton project="spigot" label="Download Spigot" />
+
+Spigot is the classic Bukkit-based server software for plugins.
+
+## Step 2: Create a Start Script
+
+```bash
+java -Xms4G -Xmx4G -jar server.jar --nogui
+```
+
+Need optimized flags? Use the [Startup Flags Generator](/guides/startup-flags-generator).
+
+## Step 3: Configure server.properties
+
+Set your `motd`, `max-players`, and `view-distance`. Use our [server.properties generator](/guides/server-properties-generator) for a clean config.
+
+## Step 4: Install Plugins
+
+1. Download plugin jars
+2. Place them in the `plugins` folder
+3. Restart the server
+
+<CalloutBox type="info" title="Paper vs Spigot">
+Paper is a high-performance fork of Spigot. If you want better performance and fixes, consider [Paper](/paper).
+</CalloutBox>
+
+## Troubleshooting
+
+If your server fails to start, check your Java version and RAM allocation. See [Common Server Errors](/guides/common-server-errors).

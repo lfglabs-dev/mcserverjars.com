@@ -1,0 +1,56 @@
+---
+title: "Fix Minecraft Server Connection Timed Out (No Further Information)"
+description: "Resolve the common 'Connection timed out: no further information' error when joining a Minecraft server."
+publishedAt: "2025-12-28"
+updatedAt: "2025-12-28"
+author: "mcserverjars"
+category: "troubleshooting"
+tags: ["connection timed out", "cannot connect", "network", "troubleshooting"]
+schemaType: "FAQPage"
+faqItems:
+  - question: "Why do I see 'Connection timed out: no further information'?"
+    answer: "The client cannot reach the server over the network. The server may be offline, the IP/port is wrong, or the network is blocking port 25565."
+  - question: "How do I know if the server is running?"
+    answer: "Check the console for a 'Done' message and confirm the server is listening on port 25565."
+  - question: "What if it works on LAN but not over the internet?"
+    answer: "This usually means port forwarding or firewall settings are blocking external access."
+  - question: "Can my ISP block Minecraft servers?"
+    answer: "Yes. Some ISPs use CGNAT or block inbound ports. You may need a static IP, a tunnel, or hosted server."
+---
+
+## 1. Verify the Server Is Running
+
+- Look for `Done` in the server console
+- Make sure you can join locally with `localhost`
+
+## 2. Double-Check the IP and Port
+
+- Local network: use the server PC local IP (192.168.x.x)
+- External players: use your public IP
+- If you changed ports, connect with `ip:port` (example: `203.0.113.10:25566`)
+
+## 3. Check Firewall Rules
+
+Allow Java and port 25565 through your firewall:
+
+```bash
+netsh advfirewall firewall add rule name="Minecraft" dir=in action=allow protocol=TCP localport=25565
+```
+
+## 4. Configure Port Forwarding
+
+If players outside your network cannot join, you must forward port 25565 to your server PC.
+
+Follow the full guide: [How to Port Forward a Minecraft Server](/guides/how-to-port-forward-minecraft-server)
+
+## 5. ISP or CGNAT Issues
+
+If port forwarding is correct but it still fails:
+
+- Check if your router shows a WAN IP that differs from your public IP
+- Ask your ISP if they use CGNAT
+- Consider a tunnel service or hosted server
+
+## Still Stuck?
+
+See [Common Server Errors](/guides/common-server-errors) for more fixes and a checklist.

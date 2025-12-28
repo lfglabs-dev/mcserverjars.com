@@ -1,0 +1,261 @@
+---
+title: "Complete Minecraft Server Optimization Guide 2026"
+description: "Learn how to optimize your Minecraft server for maximum performance. Reduce lag, improve TPS, and handle more players with these proven optimization techniques."
+publishedAt: "2025-12-28"
+updatedAt: "2025-12-28"
+author: "mcserverjars"
+category: "optimization"
+tags: ["optimization", "performance", "tps", "lag", "paper"]
+readingTime: 12
+featured: true
+schemaType: "HowTo"
+howToSteps:
+  - name: "Use optimized server software"
+    text: "Install Paper or Purpur instead of Vanilla or Spigot for better performance."
+  - name: "Configure startup flags"
+    text: "Use Aikar's flags to optimize Java garbage collection."
+  - name: "Adjust server configuration"
+    text: "Tune server.properties, paper.yml, and spigot.yml for your needs."
+  - name: "Optimize world generation"
+    text: "Pre-generate chunks and limit world border size."
+  - name: "Manage entities and plugins"
+    text: "Reduce entity counts and remove unnecessary plugins."
+---
+
+## Quick Wins
+
+Before diving deep, here are the most impactful optimizations:
+
+1. **Use Paper or Purpur** instead of Vanilla or Spigot
+2. **Use optimized startup flags** (see our [Flags Generator](/guides/startup-flags-generator))
+3. **Pre-generate your world** to avoid lag spikes
+4. **Limit view distance** to 6-8 chunks for survival servers
+
+## Step 1: Choose the Right Server Software
+
+Your choice of server software has the biggest impact on performance.
+
+| Software | Performance | Best For |
+|----------|-------------|----------|
+| [Paper](/paper) | Excellent | Most servers |
+| [Purpur](/purpur) | Excellent | Custom features |
+| [Spigot](/spigot) | Good | Legacy compatibility |
+| [Vanilla](/vanilla) | Baseline | Pure experience |
+
+<DownloadButton project="paper" />
+
+Paper includes dozens of performance optimizations over Spigot, including async chunk loading, optimized entity tracking, and better memory management.
+
+## Step 2: Optimize Startup Flags
+
+Java startup flags significantly impact performance. Use our generator or copy these recommended flags:
+
+<CalloutBox type="tip">
+Use our [Startup Flags Generator](/guides/startup-flags-generator) to create customized flags for your server.
+</CalloutBox>
+
+Key points:
+- Allocate appropriate RAM (4-8GB for most servers)
+- Use G1GC garbage collector
+- Set identical -Xms and -Xmx values
+- Enable string deduplication on Java 11+
+
+## Step 3: Configure server.properties
+
+Edit `server.properties` for optimal settings:
+
+```properties
+# Reduce view distance for better performance
+view-distance=6
+simulation-distance=4
+
+# Disable unnecessary features
+spawn-monsters=true
+spawn-animals=true
+spawn-npcs=true
+
+# Network optimization
+network-compression-threshold=256
+```
+
+### View Distance vs Simulation Distance
+
+- **view-distance**: How far players can see (chunks sent to client)
+- **simulation-distance**: How far entities are ticked (server performance impact)
+
+Keep simulation-distance lower than view-distance for the best balance.
+
+For more tuning tips, see [Best View Distance and Simulation Distance](/guides/best-view-distance-simulation-distance).
+
+## Step 4: Paper Configuration
+
+Paper offers extensive configuration options. Key files to edit:
+
+### paper-global.yml
+
+```yaml
+chunk-system:
+  gen-parallelism: default
+  io-threads: -1
+  worker-threads: -1
+
+async-chunks:
+  threads: -1
+```
+
+### paper-world-defaults.yml
+
+```yaml
+entities:
+  armor-stands:
+    tick: false
+  spawning:
+    despawn-ranges:
+      ambient:
+        hard: 72
+        soft: 28
+      axolotls:
+        hard: 72
+        soft: 28
+
+environment:
+  optimize-explosions: true
+  disable-teleportation-suffocation-check: true
+
+hopper:
+  disable-move-event: false
+  ignore-occluding-blocks: false
+
+chunks:
+  auto-save-interval: 6000
+  delay-chunk-unloads-by: 10s
+```
+
+## Step 5: Pre-Generate Your World
+
+Chunk generation is expensive. Pre-generate your world to avoid lag when players explore:
+
+### Using Chunky Plugin
+
+1. Install [Chunky](https://modrinth.com/plugin/chunky)
+2. Set your world border: `/worldborder set 10000`
+3. Start pre-generation: `/chunky radius 5000`
+4. Begin: `/chunky start`
+
+<CalloutBox type="info">
+Pre-generation can take hours for large worlds. Run it when players are offline.
+</CalloutBox>
+
+## Step 6: Entity Optimization
+
+Entities are often the biggest performance drain.
+
+### Reduce Entity Counts
+
+- Use mob stacking plugins for farms
+- Limit breeding and spawning rates
+- Clear excess dropped items regularly
+
+### Common Lag Sources
+
+| Entity | Impact | Solution |
+|--------|--------|----------|
+| Villagers | Very High | Limit to 10-20 per area |
+| Item frames | High | Avoid in bulk |
+| Armor stands | Medium | Disable ticking |
+| Dropped items | Medium | Use ClearLag |
+
+## Step 7: Plugin Optimization
+
+Plugins add functionality but can hurt performance.
+
+### Best Practices
+
+1. **Audit regularly** - Remove unused plugins
+2. **Use Timings** - Run `/timings report` to identify slow plugins
+3. **Choose quality** - Use well-maintained plugins from reputable sources
+4. **Limit async tasks** - Too many async operations cause thread contention
+
+### Performance-Heavy Plugin Categories
+
+- **Dynmap** - Uses significant CPU for rendering
+- **World edit** - Large operations cause lag
+- **Economy plugins** - Database operations can be slow
+- **Hologram plugins** - Many entities = many ticks
+
+## Step 8: Database Optimization
+
+If using MySQL or MariaDB:
+
+```sql
+-- Add indexes to frequently queried tables
+-- Ensure proper connection pooling
+-- Use async database operations
+```
+
+Consider SQLite for smaller servers - less overhead, no network latency.
+
+## Step 9: Monitoring Performance
+
+### Using Spark
+
+[Spark](https://spark.lucko.me/) is the best profiling tool for Minecraft:
+
+1. Install Spark plugin
+2. Run `/spark profiler`
+3. Wait 1-2 minutes during normal gameplay
+4. Run `/spark profiler --stop`
+5. Analyze the report
+
+### Key Metrics
+
+- **TPS** - Should be 20.0 (use `/spark tps`)
+- **MSPT** - Milliseconds per tick, should be under 50
+- **Memory** - Watch for memory leaks
+
+## Step 10: Hardware Considerations
+
+### CPU Priority
+
+Minecraft is single-threaded for game ticks. Prioritize:
+1. Single-core performance over core count
+2. High clock speed (4+ GHz)
+3. Modern architecture (Ryzen 5000+, Intel 12th gen+)
+
+### RAM Guidelines
+
+| Server Size | Recommended RAM |
+|-------------|-----------------|
+| 1-10 players | 2-4 GB |
+| 10-30 players | 4-6 GB |
+| 30-50 players | 6-8 GB |
+| 50-100 players | 8-12 GB |
+| 100+ players | 12+ GB |
+
+### Storage
+
+Use SSDs for world data. NVMe preferred for large worlds.
+
+## Common Performance Issues
+
+<CalloutBox type="warning" title="Lag Spikes Every 30 Seconds?">
+This is often auto-save. Increase `auto-save-interval` in Paper config or use a backup plugin instead.
+</CalloutBox>
+
+<CalloutBox type="warning" title="TPS Drops During Exploration?">
+Pre-generate your world and consider a world border to limit exploration area.
+</CalloutBox>
+
+<CalloutBox type="warning" title="Memory Keeps Growing?">
+Could be a memory leak. Use Spark to profile memory usage and identify the culprit.
+</CalloutBox>
+
+## Conclusion
+
+Server optimization is an ongoing process. Start with the biggest wins (Paper, flags, view distance), monitor with Spark, and iterate. Every server is different - what works for one may not work for another.
+
+## Related Guides
+
+- [Startup Flags Generator](/guides/startup-flags-generator)
+- [How to Install Paper](/guides/how-to-install-paper)
+- [Common Server Errors](/guides/common-server-errors)

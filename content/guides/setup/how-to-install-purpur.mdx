@@ -1,0 +1,55 @@
+---
+title: "How to Install a Purpur Minecraft Server"
+description: "Install Purpur for maximum customization and performance. Learn how to download, configure, and run a Purpur server."
+publishedAt: "2025-12-28"
+updatedAt: "2025-12-28"
+author: "mcserverjars"
+category: "setup"
+tags: ["purpur", "paper", "plugins", "setup"]
+schemaType: "HowTo"
+howToSteps:
+  - name: "Install Java"
+    text: "Install Java 21 for Minecraft 1.20.5+ or Java 17 for older versions."
+  - name: "Download Purpur"
+    text: "Get the latest Purpur jar from MCServerJars."
+  - name: "Create a server folder"
+    text: "Place the jar in a new folder and rename it to server.jar."
+  - name: "Run the server"
+    text: "Start the server once to generate configuration files."
+  - name: "Accept the EULA"
+    text: "Edit eula.txt and set eula=true."
+  - name: "Customize settings"
+    text: "Edit purpur.yml and server.properties for gameplay tweaks."
+---
+
+## Step 1: Download Purpur
+
+<DownloadButton project="purpur" label="Download Purpur" />
+
+Purpur is a feature-rich fork of Paper with extra configuration options and gameplay tweaks.
+
+## Step 2: Start Your Server
+
+Create a start script:
+
+```bash
+java -Xms4G -Xmx4G -jar server.jar --nogui
+```
+
+Use the [Startup Flags Generator](/guides/startup-flags-generator) for better performance.
+
+## Step 3: Configure Purpur
+
+Purpur adds a `purpur.yml` file with extensive settings:
+
+- Entity behavior tweaks
+- Gameplay quality-of-life options
+- Customization for mobs and mechanics
+
+## Step 4: Install Plugins
+
+Purpur is fully compatible with Spigot plugins. Drop plugin jars into the `plugins` folder and restart.
+
+## Purpur vs Paper
+
+Purpur is best if you want maximum customization. Paper is simpler and slightly more conservative. Compare them in [Paper vs Purpur](/guides/paper-vs-purpur).

@@ -1,0 +1,61 @@
+---
+title: "Best View Distance and Simulation Distance for Minecraft Servers"
+description: "Find the best view-distance and simulation-distance settings to reduce lag and keep your Minecraft server smooth."
+publishedAt: "2025-12-28"
+updatedAt: "2025-12-28"
+author: "mcserverjars"
+category: "optimization"
+tags: ["view distance", "simulation distance", "performance", "lag", "tps"]
+schemaType: "Article"
+---
+
+## Quick Recommendations
+
+- **Small servers (1-10 players):** View 8, Simulation 6
+- **Medium servers (10-30 players):** View 6-8, Simulation 4-6
+- **Large servers (30+ players):** View 4-6, Simulation 3-4
+
+## What These Settings Do
+
+- **view-distance** controls how many chunks are sent to players
+- **simulation-distance** controls how many chunks are ticked (mob AI, redstone, farms)
+
+Simulation distance has the biggest impact on CPU usage.
+
+## Where to Change Them
+
+Edit `server.properties`:
+
+```properties
+view-distance=6
+simulation-distance=4
+```
+
+Or use our [server.properties generator](/guides/server-properties-generator).
+
+## How to Pick the Right Values
+
+### 1. Start Conservative
+
+Lower values reduce CPU and memory usage. If your TPS stays at 20, you can raise them gradually.
+
+### 2. Match Your Hardware
+
+If your CPU is the bottleneck, lower **simulation-distance** first. If your network is the bottleneck, lower **view-distance**.
+
+### 3. Consider Gameplay Style
+
+Redstone-heavy servers need higher simulation distance. Survival servers can often run with 4-6.
+
+<CalloutBox type="tip" title="Need a baseline?">
+Use the [RAM Calculator](/guides/ram-calculator) to estimate a safe starting point for your server.
+</CalloutBox>
+
+## Performance Checklist
+
+- Pre-generate your world
+- Use Paper or Purpur
+- Reduce entity counts
+- Profile with Spark
+
+For a full performance breakdown, read the [Complete Optimization Guide](/guides/minecraft-server-optimization).
