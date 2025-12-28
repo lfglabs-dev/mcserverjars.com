@@ -17,7 +17,7 @@ import {
 import { generateGuideSchema } from "@/lib/guides/schema";
 import { CalloutBox, CodeBlock, DownloadButton, StartupFlagsGenerator } from "@/app/components/mdx";
 import Link from "next/link";
-import { RiTimeLine, RiUserLine, RiCalendarLine } from "@remixicon/react";
+import { RiUserLine, RiArrowRightLine } from "@remixicon/react";
 
 export const revalidate = 3600;
 
@@ -131,44 +131,43 @@ export default async function GuidePage({ params }: Props) {
           />
 
           {/* Guide Header */}
-          <header className="mb-8">
-            <div className="flex flex-wrap gap-2 mb-4">
+          <header className="mb-10">
+            <div className="flex items-center gap-3 text-sm text-[var(--text-muted)] mb-4">
               <Link
                 href={`/guides/category/${category}`}
-                className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                className="font-medium text-primary hover:underline"
               >
                 {CATEGORY_LABELS[category]}
               </Link>
-              {frontmatter.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center rounded-full bg-[var(--bg-subtle)] px-3 py-1 text-xs text-[var(--text-muted)]"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <h1 className="text-3xl font-bold mb-4">{frontmatter.title}</h1>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--text-muted)]">
-              {author && (
-                <div className="flex items-center gap-1.5">
-                  <RiUserLine className="h-4 w-4" />
-                  <span>{author.name}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5">
-                <RiCalendarLine className="h-4 w-4" />
-                <span>{publishDate}</span>
-              </div>
+              <span className="text-[var(--text-subtle)]">·</span>
+              <span>{publishDate}</span>
               {frontmatter.readingTime && (
-                <div className="flex items-center gap-1.5">
-                  <RiTimeLine className="h-4 w-4" />
+                <>
+                  <span className="text-[var(--text-subtle)]">·</span>
                   <span>{formatReadingTime(frontmatter.readingTime)}</span>
-                </div>
+                </>
               )}
             </div>
+
+            <h1 className="text-4xl font-bold tracking-tight mb-4">{frontmatter.title}</h1>
+
+            <p className="text-lg text-[var(--text-muted)] leading-relaxed">
+              {frontmatter.description}
+            </p>
+
+            {author && (
+              <div className="flex items-center gap-3 mt-6 pt-6 border-t border-[var(--border-subtle)]">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <RiUserLine className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <div className="font-medium">{author.name}</div>
+                  {author.role && (
+                    <div className="text-sm text-[var(--text-muted)]">{author.role}</div>
+                  )}
+                </div>
+              </div>
+            )}
           </header>
 
           {/* Guide Content */}
@@ -190,21 +189,24 @@ export default async function GuidePage({ params }: Props) {
 
           {/* Related Guides */}
           {relatedGuides.length > 0 && (
-            <section className="mt-12 pt-8 border-t border-[var(--border-subtle)]">
-              <h2 className="text-lg font-semibold mb-4">Related Guides</h2>
-              <div className="space-y-3">
+            <section className="mt-16 pt-8 border-t border-[var(--border-subtle)]">
+              <h2 className="text-xl font-semibold mb-6">Continue Reading</h2>
+              <div className="grid gap-4">
                 {relatedGuides.map((related) => (
                   <Link
                     key={related.slug}
                     href={`/guides/${related.slug}`}
-                    className="block p-4 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--border-hover)] hover:bg-[var(--bg-hover)] transition-colors"
+                    className="group flex items-center justify-between p-5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-primary/30 hover:bg-[var(--bg-hover)] transition-all"
                   >
-                    <h3 className="font-medium hover:text-primary transition-colors">
-                      {related.frontmatter.title}
-                    </h3>
-                    <p className="text-sm text-[var(--text-muted)] mt-1 line-clamp-2">
-                      {related.frontmatter.description}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold group-hover:text-primary transition-colors">
+                        {related.frontmatter.title}
+                      </h3>
+                      <p className="text-sm text-[var(--text-muted)] mt-1 line-clamp-1">
+                        {related.frontmatter.description}
+                      </p>
+                    </div>
+                    <RiArrowRightLine className="h-5 w-5 ml-4 text-[var(--text-subtle)] group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
                   </Link>
                 ))}
               </div>
