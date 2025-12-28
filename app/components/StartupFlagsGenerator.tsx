@@ -56,11 +56,18 @@ function generateFlags(
   if (useZGC) {
     // ZGC flags for extremely low pause times
     flags.push("-XX:+UseZGC");
-    flags.push("-XX:+ZGenerational");
     explanations.push({
-      flag: "-XX:+UseZGC -XX:+ZGenerational",
+      flag: "-XX:+UseZGC",
       description: "Use ZGC for extremely low GC pause times (experimental, may increase CPU usage).",
     });
+
+    if (parseInt(javaVersion) >= 21) {
+      flags.push("-XX:+ZGenerational");
+      explanations.push({
+        flag: "-XX:+ZGenerational",
+        description: "Enable Generational ZGC (Java 21+) for improved throughput.",
+      });
+    }
   } else {
     // G1GC flags (Aikar's flags)
     flags.push("-XX:+UseG1GC");
@@ -222,6 +229,12 @@ export function StartupFlagsGenerator() {
             Experimental flags (ZGC)
             {parseInt(javaVersion) < 17 && (
               <span className="text-[var(--text-subtle)]"> - Requires Java 17+</span>
+            )}
+            {parseInt(javaVersion) >= 17 && parseInt(javaVersion) < 21 && (
+              <span className="text-[var(--text-subtle)]">
+                {" "}
+                - Generational ZGC requires Java 21+
+              </span>
             )}
           </span>
         </div>
