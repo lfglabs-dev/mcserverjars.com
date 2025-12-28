@@ -1,0 +1,19 @@
+[
+  {
+    "name": "MCServerJars",
+    "slug": "mcserverjars",
+    "role": "Organization",
+    "bio": "The authoritative registry for Minecraft server jars.",
+    "avatar": "/images/authors/mcserverjars.png"
+  },
+  {
+    "name": "Thomas Marchand",
+    "slug": "thomas",
+    "role": "Founder",
+    "bio": "Server administrator with 10+ years of Minecraft experience.",
+    "avatar": "/images/authors/thomas.png",
+    "social": {
+      "github": "Th0rgal"
+    }
+  }
+]

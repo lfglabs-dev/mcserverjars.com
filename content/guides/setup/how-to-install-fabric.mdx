@@ -1,0 +1,239 @@
+---
+title: "How to Install a Fabric Minecraft Server"
+description: "Step-by-step guide to setting up a Fabric server for Minecraft. Install Fabric, add mods, and configure your modded server in minutes."
+publishedAt: "2025-01-15"
+author: "mcserverjars"
+category: "setup"
+tags: ["fabric", "mods", "installation", "tutorial"]
+readingTime: 8
+schemaType: "HowTo"
+howToSteps:
+  - name: "Install Java"
+    text: "Download and install Java 17 or newer."
+  - name: "Download Fabric Server"
+    text: "Download the Fabric server launcher from MCServerJars."
+  - name: "Run Initial Setup"
+    text: "Run the server once to generate configuration files."
+  - name: "Accept EULA"
+    text: "Edit eula.txt and set eula=true."
+  - name: "Install Fabric API"
+    text: "Download Fabric API and place it in the mods folder."
+  - name: "Add Your Mods"
+    text: "Download compatible mods and add them to the mods folder."
+---
+
+# How to Install a Fabric Minecraft Server
+
+Fabric is a lightweight mod loader that's become the preferred choice for many Minecraft modders. This guide will help you set up a Fabric server from scratch.
+
+## Why Choose Fabric?
+
+- **Fast updates** - Usually available within days of new Minecraft versions
+- **Lightweight** - Minimal performance overhead
+- **Modern** - Built with current best practices
+- **Growing ecosystem** - Many popular mods now available
+
+<DownloadButton project="fabric" />
+
+## Requirements
+
+- Java 17 or newer (Java 21 for Minecraft 1.20.5+)
+- At least 4GB of RAM (8GB+ recommended for modpacks)
+- A computer or VPS to run the server
+
+## Step 1: Install Java
+
+Fabric requires Java 17 or newer. For Minecraft 1.20.5+, use Java 21.
+
+Download from [Adoptium](https://adoptium.net/):
+
+1. Go to adoptium.net
+2. Download Eclipse Temurin for your operating system
+3. Run the installer
+
+Verify installation:
+
+```bash
+java -version
+```
+
+You should see output indicating Java 17 or higher.
+
+## Step 2: Download Fabric Server
+
+Download the Fabric server launcher:
+
+<DownloadButton project="fabric" label="Download Fabric Server" />
+
+The launcher will download the necessary Fabric files when first run.
+
+## Step 3: Create Server Directory
+
+Create a dedicated folder for your server:
+
+```
+minecraft-fabric-server/
+├── server.jar (your downloaded Fabric jar)
+└── (other files will be generated)
+```
+
+## Step 4: Create Start Script
+
+Create a start script for your server.
+
+**Windows (start.bat):**
+
+```batch
+@echo off
+java -Xmx4G -Xms4G -jar fabric-server-launcher.jar nogui
+pause
+```
+
+**Linux/Mac (start.sh):**
+
+```bash
+#!/bin/bash
+java -Xmx4G -Xms4G -jar fabric-server-launcher.jar nogui
+```
+
+Make it executable on Linux/Mac:
+
+```bash
+chmod +x start.sh
+```
+
+<CalloutBox type="tip">
+Use our [Startup Flags Generator](/guides/startup-flags-generator) for optimized Java flags.
+</CalloutBox>
+
+## Step 5: First Run
+
+Run your start script. The server will:
+
+1. Download Minecraft server files
+2. Download Fabric libraries
+3. Generate configuration files
+4. Stop with an EULA error
+
+This is expected! Continue to the next step.
+
+## Step 6: Accept EULA
+
+Open `eula.txt` and change:
+
+```
+eula=false
+```
+
+to:
+
+```
+eula=true
+```
+
+Save the file.
+
+## Step 7: Install Fabric API
+
+Most Fabric mods require Fabric API. Download it from:
+
+- [Modrinth](https://modrinth.com/mod/fabric-api)
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
+
+Place the downloaded `.jar` file in the `mods` folder:
+
+```
+minecraft-fabric-server/
+├── mods/
+│   └── fabric-api-x.x.x.jar
+├── fabric-server-launcher.jar
+├── eula.txt
+└── ...
+```
+
+## Step 8: Add Mods
+
+Download mods compatible with your Minecraft and Fabric version:
+
+**Recommended sources:**
+- [Modrinth](https://modrinth.com/mods?l=fabric) - Modern, curated
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods?filter-game-version=2020709689%3A7499) - Large library
+
+**Popular server-side mods:**
+- **Lithium** - General optimization
+- **Starlight** - Lighting engine optimization
+- **FerriteCore** - Memory optimization
+- **Krypton** - Network optimization
+
+<CalloutBox type="warning" title="Version Compatibility">
+Make sure all mods match your Minecraft version AND Fabric loader version. Mismatched versions cause crashes.
+</CalloutBox>
+
+## Step 9: Configure Your Server
+
+Edit `server.properties` to customize your server:
+
+```properties
+server-port=25565
+max-players=20
+motd=My Fabric Server
+view-distance=10
+simulation-distance=8
+```
+
+## Step 10: Start Your Server
+
+Run your start script again. This time the server will fully start with your mods loaded.
+
+You'll see messages like:
+```
+[Server thread/INFO]: Loading X mods
+[Server thread/INFO]: Done! For help, type "help"
+```
+
+## Connecting to Your Server
+
+1. Open Minecraft with matching Fabric version
+2. Install the same mods on your client (for client-side mods)
+3. Click "Multiplayer" → "Add Server"
+4. Enter `localhost` (same computer) or your server IP
+
+## Troubleshooting
+
+<CalloutBox type="warning" title="Server Won't Start?">
+Check the logs folder for error messages. Common issues:
+- Wrong Java version
+- Incompatible mod versions
+- Missing dependencies (like Fabric API)
+</CalloutBox>
+
+<CalloutBox type="info" title="Mods Not Working?">
+Ensure mods are in the correct `mods` folder and match your Minecraft/Fabric versions. Some mods are client-only and won't show on server.
+</CalloutBox>
+
+## Updating Fabric
+
+To update Fabric:
+
+1. Download the new Fabric server launcher
+2. Replace your existing launcher jar
+3. Restart the server
+
+Fabric will automatically update its libraries.
+
+## Fabric vs Forge
+
+| Feature | Fabric | Forge |
+|---------|--------|-------|
+| Updates | Very fast | Slower |
+| Performance | Excellent | Good |
+| Mod selection | Growing | Largest |
+| Modpack support | Good | Best |
+
+See our [Fabric vs Forge Comparison](/guides/fabric-vs-forge) for more details.
+
+## Related Guides
+
+- [Fabric vs Forge Comparison](/guides/fabric-vs-forge)
+- [Server Optimization Guide](/guides/minecraft-server-optimization)
+- [Startup Flags Generator](/guides/startup-flags-generator)

@@ -1,0 +1,118 @@
+---
+title: "How to Install a Paper Minecraft Server"
+description: "Learn how to set up a Paper Minecraft server from scratch. Download Paper, configure your server, and start playing in minutes with this beginner-friendly guide."
+publishedAt: "2025-01-01"
+updatedAt: "2025-01-15"
+author: "mcserverjars"
+category: "setup"
+tags: ["paper", "installation", "tutorial", "beginner"]
+readingTime: 8
+schemaType: "HowTo"
+howToSteps:
+  - name: "Download Java"
+    text: "Install Java 21 or newer on your computer."
+  - name: "Download Paper"
+    text: "Download the latest Paper server jar from MCServerJars."
+  - name: "Create server folder"
+    text: "Create a new folder for your server files."
+  - name: "Run the server"
+    text: "Run the server jar to generate configuration files."
+  - name: "Accept EULA"
+    text: "Edit eula.txt and set eula=true."
+  - name: "Start playing"
+    text: "Run the server again and connect from Minecraft."
+---
+
+# How to Install a Paper Minecraft Server
+
+This guide will walk you through setting up a Paper Minecraft server from scratch. Paper is the most popular server software, offering excellent performance and plugin support.
+
+## Requirements
+
+- Java 21 or newer (Java 21 recommended for Minecraft 1.20.5+)
+- At least 2GB of RAM (4GB+ recommended)
+- A computer or VPS to run the server
+
+## Step 1: Install Java
+
+Paper requires Java to run. For Minecraft 1.20.5 and newer, you need Java 21. Download it from [Adoptium](https://adoptium.net/) (Eclipse Temurin).
+
+Verify your Java installation by opening a terminal and running:
+
+```bash
+java -version
+```
+
+## Step 2: Download Paper
+
+Download the latest Paper server jar for your Minecraft version:
+
+<DownloadButton project="paper" label="Download Paper from MCServerJars" />
+
+Choose the Minecraft version you want to run and download the latest build.
+
+## Step 3: Create Your Server Folder
+
+Create a new folder for your server. Name it something like "minecraft-server" and place the downloaded Paper jar inside.
+
+Rename the jar file to `server.jar` for convenience.
+
+## Step 4: Create a Start Script
+
+Create a new file called `start.sh` (Linux/Mac) or `start.bat` (Windows) with the following content:
+
+**Windows (start.bat):**
+
+```batch
+java -Xmx4G -Xms4G -jar server.jar --nogui
+```
+
+**Linux/Mac (start.sh):**
+
+```bash
+#!/bin/bash
+java -Xmx4G -Xms4G -jar server.jar --nogui
+```
+
+<CalloutBox type="tip" title="Memory Settings">
+Adjust the `-Xmx4G` and `-Xms4G` values to match how much RAM you want to allocate. Use our [Startup Flags Generator](/guides/startup-flags-generator) for optimized flags.
+</CalloutBox>
+
+## Step 5: First Run and EULA
+
+Run your start script. The server will generate some files and then stop, asking you to accept the EULA.
+
+Open `eula.txt` and change `eula=false` to `eula=true`.
+
+## Step 6: Configure Your Server
+
+Before starting again, you can edit `server.properties` to configure your server:
+
+- `server-port` - The port your server runs on (default: 25565)
+- `max-players` - Maximum number of players
+- `motd` - The message shown in the server list
+- `online-mode` - Whether to verify players with Mojang
+
+## Step 7: Start Your Server
+
+Run your start script again. This time the server will fully start. You will see a message like "Done!" when it is ready.
+
+Connect to your server from Minecraft using `localhost` if playing on the same computer, or your IP address if connecting from elsewhere.
+
+## Next Steps
+
+- **Install plugins** - Drop plugin jars into the `plugins` folder and restart
+- **Configure Paper** - Edit files in the `config` folder for performance tuning
+- **Set up backups** - Regularly backup your `world` folder
+
+## Troubleshooting
+
+<CalloutBox type="warning" title="Server won't start?">
+Make sure you have the correct Java version installed and enough RAM allocated.
+</CalloutBox>
+
+<CalloutBox type="info" title="Can't connect?">
+Check your firewall settings and make sure port 25565 is open.
+</CalloutBox>
+
+**Need a different version?** Browse all available Paper versions on [MCServerJars](/paper).

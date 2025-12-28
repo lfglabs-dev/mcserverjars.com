@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { siteConfig } from "./siteConfig";
+import { getAllGuides, CATEGORIES } from "@/lib/guides";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -23,24 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/guides/paper-vs-spigot`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/guides/how-to-install-paper`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/guides/best-minecraft-server-software-2025`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
       url: `${baseUrl}/docs`,
       lastModified: now,
       changeFrequency: "weekly",
@@ -59,6 +42,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
   ];
+
+  // Dynamic guide pages
+  const guides = await getAllGuides();
+  const guidePages: MetadataRoute.Sitemap = guides.map((guide) => ({
+    url: `${baseUrl}/guides/${guide.slug}`,
+    lastModified: new Date(
+      guide.frontmatter.updatedAt || guide.frontmatter.publishedAt
+    ),
+    changeFrequency: "monthly" as const,
+    priority: guide.frontmatter.featured ? 0.8 : 0.7,
+  }));
+
+  // Category pages
+  const categoryPages: MetadataRoute.Sitemap = CATEGORIES.map((category) => ({
+    url: `${baseUrl}/guides/category/${category}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
 
   // Try to fetch dynamic pages from Supabase
   try {
@@ -86,10 +88,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    return [...staticPages, ...projectPages, ...versionPages];
+    return [
+      ...staticPages,
+      ...guidePages,
+      ...categoryPages,
+      ...projectPages,
+      ...versionPages,
+    ];
   } catch (error) {
-    // If Supabase isn't available, return only static pages
+    // If Supabase isn't available, return static pages and guides only
     console.warn("Sitemap: Could not fetch dynamic pages:", error);
-    return staticPages;
+    return [...staticPages, ...guidePages, ...categoryPages];
   }
 }

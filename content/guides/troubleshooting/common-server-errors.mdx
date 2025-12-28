@@ -1,0 +1,251 @@
+---
+title: "Common Minecraft Server Errors and How to Fix Them"
+description: "Solutions to the most common Minecraft server errors. Fix startup issues, connection problems, crashes, and performance problems with this troubleshooting guide."
+publishedAt: "2025-01-15"
+author: "mcserverjars"
+category: "troubleshooting"
+tags: ["errors", "troubleshooting", "crashes", "connection"]
+readingTime: 10
+schemaType: "FAQPage"
+faqItems:
+  - question: "Why won't my Minecraft server start?"
+    answer: "Common causes include wrong Java version, insufficient RAM, corrupted world files, or plugin conflicts. Check your server logs for specific error messages."
+  - question: "Why can't players connect to my server?"
+    answer: "Usually caused by incorrect port forwarding, firewall blocking port 25565, or entering the wrong IP address. Verify your port forwarding and firewall settings."
+  - question: "Why does my server keep crashing?"
+    answer: "Crashes are typically caused by incompatible plugins, memory issues (OutOfMemoryError), or corrupted chunks. Check crash reports for the specific cause."
+  - question: "Why is my server lagging?"
+    answer: "Lag is usually caused by too many entities, unoptimized plugins, chunk loading, or insufficient hardware. Use Spark profiler to identify the cause."
+  - question: "What does 'Failed to bind to port' mean?"
+    answer: "This means another process is using port 25565. Either stop that process or change your server to use a different port in server.properties."
+---
+
+# Common Minecraft Server Errors and How to Fix Them
+
+Running into errors with your Minecraft server? This guide covers the most common issues and their solutions.
+
+## Startup Errors
+
+### "Error: Could not find or load main class"
+
+**Cause:** Java can't find the server JAR file.
+
+**Solution:**
+1. Make sure the JAR file is in the same directory as your start script
+2. Check the JAR filename matches exactly what's in your start script
+3. Remove spaces from folder names in the path
+
+```batch
+# Correct
+java -jar server.jar nogui
+
+# Wrong - file doesn't exist
+java -jar Server.jar nogui
+```
+
+### "UnsupportedClassVersionError" or "class file version 65.0"
+
+**Cause:** Wrong Java version. Minecraft requires specific Java versions:
+
+| Minecraft Version | Required Java |
+|-------------------|---------------|
+| 1.20.5+ | Java 21 |
+| 1.18 - 1.20.4 | Java 17 |
+| 1.17 | Java 16 |
+| 1.12 - 1.16.5 | Java 8-16 |
+
+**Solution:**
+1. Install the correct Java version from [Adoptium](https://adoptium.net/)
+2. Update your start script to use the new Java
+
+```bash
+# Point to specific Java installation if needed
+/path/to/java21/bin/java -jar server.jar nogui
+```
+
+### "Failed to bind to port" or "Address already in use"
+
+**Cause:** Another process is using port 25565.
+
+**Solution:**
+1. Check for other Minecraft servers running
+2. Close any conflicting applications
+3. Use a different port:
+
+```properties
+# In server.properties
+server-port=25566
+```
+
+### "EULA not accepted"
+
+**Cause:** You haven't agreed to the Minecraft EULA.
+
+**Solution:**
+Open `eula.txt` and change `eula=false` to `eula=true`.
+
+<CalloutBox type="info">
+By setting eula=true, you agree to Mojang's End User License Agreement.
+</CalloutBox>
+
+## Connection Errors
+
+### "Can't connect to server" or "Connection refused"
+
+**Common causes and solutions:**
+
+1. **Wrong IP address**
+   - Use `localhost` for same computer
+   - Use your local IP (192.168.x.x) for LAN
+   - Use your public IP for external connections
+
+2. **Firewall blocking**
+   ```bash
+   # Windows - allow through firewall
+   netsh advfirewall firewall add rule name="Minecraft" dir=in action=allow protocol=TCP localport=25565
+   ```
+
+3. **Port not forwarded**
+   - Access your router admin panel
+   - Forward port 25565 (TCP) to your server's local IP
+
+### "io.netty.channel.AbstractChannel$AnnotatedConnectException"
+
+**Cause:** Network connection failed.
+
+**Solutions:**
+- Check the server is actually running
+- Verify the IP address and port are correct
+- Check for firewall/antivirus blocking
+- Try restarting your router
+
+### "Outdated server" or "Outdated client"
+
+**Cause:** Minecraft version mismatch between client and server.
+
+**Solution:**
+- Update your client to match the server version, OR
+- Update your server to match your client version
+
+<DownloadButton project="paper" label="Download Latest Paper" />
+
+## Crashes and Errors
+
+### "OutOfMemoryError: Java heap space"
+
+**Cause:** Not enough RAM allocated.
+
+**Solution:**
+Increase memory in your start script:
+
+```bash
+# Increase from 4G to 6G
+java -Xms6G -Xmx6G -jar server.jar nogui
+```
+
+<CalloutBox type="warning">
+Don't allocate more RAM than your system has available. Leave at least 2GB for the operating system.
+</CalloutBox>
+
+### "Ticking entity" crash
+
+**Cause:** A specific entity is causing the server to crash.
+
+**Solutions:**
+1. Check the crash report for coordinates
+2. Use MCEdit or NBTExplorer to remove the entity
+3. Restore from backup if available
+
+### "Chunk loading errors" or corrupted world
+
+**Cause:** World files are damaged.
+
+**Solutions:**
+1. Restore from backup (best option)
+2. Use region fixer tools
+3. Delete the corrupted region files (causes data loss)
+
+### Plugin conflicts and errors
+
+**Cause:** Incompatible or buggy plugins.
+
+**Solution:**
+1. Check `logs/latest.log` for error messages
+2. Remove plugins one by one to identify the culprit
+3. Update plugins to latest versions
+4. Check plugin compatibility with your server version
+
+## Performance Issues
+
+### Low TPS (below 20)
+
+**Cause:** Server is lagging and can't keep up.
+
+**Solutions:**
+1. Use [Spark](https://spark.lucko.me/) profiler to identify issues
+2. Reduce view-distance in server.properties
+3. Remove performance-heavy plugins
+4. Pre-generate your world
+
+See our [Optimization Guide](/guides/minecraft-server-optimization) for detailed solutions.
+
+### High memory usage
+
+**Cause:** Memory leak or too many loaded chunks.
+
+**Solutions:**
+1. Set a world border to limit exploration
+2. Use Paper's chunk unloading features
+3. Check for plugin memory leaks with Spark
+4. Restart server on a schedule
+
+### Tick lag spikes
+
+**Cause:** Something causing periodic freezes.
+
+**Common culprits:**
+- Auto-save (every 5 minutes by default)
+- Backup plugins
+- Large redstone contraptions
+- Entity processing
+
+## Error Logs
+
+### Where to find logs
+
+| File | Contents |
+|------|----------|
+| `logs/latest.log` | Current session log |
+| `logs/YYYY-MM-DD-#.log.gz` | Previous session logs |
+| `crash-reports/` | Crash report files |
+
+### Reading crash reports
+
+Key sections to check:
+
+1. **Description** - What happened
+2. **Stack trace** - The technical error
+3. **System Details** - Java version, OS, etc.
+4. **Mods/Plugins** - List of loaded additions
+
+<CalloutBox type="tip" title="Getting Help">
+When asking for help on forums or Discord, always include:
+- Your Minecraft version
+- Your server software (Paper, Fabric, etc.)
+- The relevant error from logs
+- Steps to reproduce the issue
+</CalloutBox>
+
+## Prevention Tips
+
+1. **Keep backups** - Backup world and config files regularly
+2. **Test changes** - Test new plugins on a development server first
+3. **Update carefully** - Read changelogs before updating
+4. **Monitor resources** - Use monitoring tools to catch issues early
+5. **Use stable software** - Prefer stable releases over development builds
+
+## Related Guides
+
+- [Server Optimization Guide](/guides/minecraft-server-optimization)
+- [How to Install Paper](/guides/how-to-install-paper)
+- [Startup Flags Generator](/guides/startup-flags-generator)
