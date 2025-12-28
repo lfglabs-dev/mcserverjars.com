@@ -12,8 +12,6 @@ interface FlagExplanation {
   description: string;
 }
 
-const ramOptions = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20, 24, 32];
-
 const javaVersionLabels: Record<JavaVersion, string> = {
   "8": "Java 8 (Legacy)",
   "11": "Java 11",
@@ -34,9 +32,11 @@ function generateFlags(
   serverType: ServerType,
   useExperimental: boolean
 ): { flags: string; explanations: FlagExplanation[] } {
-  const ramMb = ramGb * 1024;
   const explanations: FlagExplanation[] = [];
   const flags: string[] = [];
+
+  // Determine if we should use ZGC
+  const useZGC = useExperimental && parseInt(javaVersion) >= 17;
 
   // Memory allocation
   flags.push(`-Xms${ramGb}G`);
@@ -46,25 +46,6 @@ function generateFlags(
     description: `Allocate ${ramGb}GB of RAM. Setting min and max equal prevents memory resizing overhead.`,
   });
 
-  // G1GC flags (Aikar's flags)
-  flags.push("-XX:+UseG1GC");
-  explanations.push({
-    flag: "-XX:+UseG1GC",
-    description: "Use the G1 garbage collector, optimized for low-latency applications.",
-  });
-
-  flags.push("-XX:+ParallelRefProcEnabled");
-  explanations.push({
-    flag: "-XX:+ParallelRefProcEnabled",
-    description: "Enable parallel reference processing to reduce GC pause times.",
-  });
-
-  flags.push("-XX:MaxGCPauseMillis=200");
-  explanations.push({
-    flag: "-XX:MaxGCPauseMillis=200",
-    description: "Target maximum GC pause time of 200ms for smooth gameplay.",
-  });
-
   flags.push("-XX:+UnlockExperimentalVMOptions");
   flags.push("-XX:+DisableExplicitGC");
   explanations.push({
@@ -72,56 +53,68 @@ function generateFlags(
     description: "Prevent plugins from forcing full garbage collections.",
   });
 
-  // G1 region size based on RAM
-  const g1NewSize = Math.min(Math.floor(ramMb * 0.4), 2048);
-  const g1MaxNewSize = Math.min(Math.floor(ramMb * 0.5), 4096);
-  const g1HeapRegionSize = ramGb >= 12 ? "16M" : "8M";
-
-  flags.push(`-XX:G1NewSizePercent=30`);
-  flags.push(`-XX:G1MaxNewSizePercent=40`);
-  flags.push(`-XX:G1HeapRegionSize=${g1HeapRegionSize}`);
-  explanations.push({
-    flag: `-XX:G1HeapRegionSize=${g1HeapRegionSize}`,
-    description: `Set G1 region size to ${g1HeapRegionSize} based on ${ramGb}GB heap.`,
-  });
-
-  flags.push("-XX:G1ReservePercent=20");
-  flags.push("-XX:G1HeapWastePercent=5");
-  flags.push("-XX:G1MixedGCCountTarget=4");
-
-  flags.push("-XX:InitiatingHeapOccupancyPercent=15");
-  explanations.push({
-    flag: "-XX:InitiatingHeapOccupancyPercent=15",
-    description: "Start GC earlier to prevent memory pressure spikes.",
-  });
-
-  flags.push("-XX:G1MixedGCLiveThresholdPercent=90");
-  flags.push("-XX:G1RSetUpdatingPauseTimePercent=5");
-  flags.push("-XX:SurvivorRatio=32");
-  flags.push("-XX:+PerfDisableSharedMem");
-  flags.push("-XX:MaxTenuringThreshold=1");
-
-  // Java version specific flags
-  if (parseInt(javaVersion) >= 11) {
-    flags.push("-XX:+UseStringDeduplication");
-    explanations.push({
-      flag: "-XX:+UseStringDeduplication",
-      description: "Reduce memory usage by deduplicating identical strings.",
-    });
-  }
-
-  // Experimental flags
-  if (useExperimental && parseInt(javaVersion) >= 17) {
+  if (useZGC) {
+    // ZGC flags for extremely low pause times
     flags.push("-XX:+UseZGC");
     flags.push("-XX:+ZGenerational");
     explanations.push({
       flag: "-XX:+UseZGC -XX:+ZGenerational",
       description: "Use ZGC for extremely low GC pause times (experimental, may increase CPU usage).",
     });
-    // Remove G1GC flags if using ZGC
-    const g1Index = flags.indexOf("-XX:+UseG1GC");
-    if (g1Index > -1) {
-      flags.splice(g1Index, 1);
+  } else {
+    // G1GC flags (Aikar's flags)
+    flags.push("-XX:+UseG1GC");
+    explanations.push({
+      flag: "-XX:+UseG1GC",
+      description: "Use the G1 garbage collector, optimized for low-latency applications.",
+    });
+
+    flags.push("-XX:+ParallelRefProcEnabled");
+    explanations.push({
+      flag: "-XX:+ParallelRefProcEnabled",
+      description: "Enable parallel reference processing to reduce GC pause times.",
+    });
+
+    flags.push("-XX:MaxGCPauseMillis=200");
+    explanations.push({
+      flag: "-XX:MaxGCPauseMillis=200",
+      description: "Target maximum GC pause time of 200ms for smooth gameplay.",
+    });
+
+    // G1 region size based on RAM
+    const g1HeapRegionSize = ramGb >= 12 ? "16M" : "8M";
+
+    flags.push("-XX:G1NewSizePercent=30");
+    flags.push("-XX:G1MaxNewSizePercent=40");
+    flags.push(`-XX:G1HeapRegionSize=${g1HeapRegionSize}`);
+    explanations.push({
+      flag: `-XX:G1HeapRegionSize=${g1HeapRegionSize}`,
+      description: `Set G1 region size to ${g1HeapRegionSize} based on ${ramGb}GB heap.`,
+    });
+
+    flags.push("-XX:G1ReservePercent=20");
+    flags.push("-XX:G1HeapWastePercent=5");
+    flags.push("-XX:G1MixedGCCountTarget=4");
+
+    flags.push("-XX:InitiatingHeapOccupancyPercent=15");
+    explanations.push({
+      flag: "-XX:InitiatingHeapOccupancyPercent=15",
+      description: "Start GC earlier to prevent memory pressure spikes.",
+    });
+
+    flags.push("-XX:G1MixedGCLiveThresholdPercent=90");
+    flags.push("-XX:G1RSetUpdatingPauseTimePercent=5");
+    flags.push("-XX:SurvivorRatio=32");
+    flags.push("-XX:+PerfDisableSharedMem");
+    flags.push("-XX:MaxTenuringThreshold=1");
+
+    // String deduplication only works with G1GC
+    if (parseInt(javaVersion) >= 11) {
+      flags.push("-XX:+UseStringDeduplication");
+      explanations.push({
+        flag: "-XX:+UseStringDeduplication",
+        description: "Reduce memory usage by deduplicating identical strings.",
+      });
     }
   }
 
