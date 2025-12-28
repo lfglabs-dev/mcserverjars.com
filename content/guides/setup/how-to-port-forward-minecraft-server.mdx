@@ -1,0 +1,75 @@
+---
+title: "How to Port Forward a Minecraft Server"
+description: "Allow friends to join your Minecraft server from outside your network. Step-by-step port forwarding guide with router and firewall tips."
+publishedAt: "2025-12-28"
+author: "mcserverjars"
+category: "setup"
+tags: ["port forwarding", "networking", "server setup", "connection"]
+schemaType: "HowTo"
+howToSteps:
+  - name: "Find your local IP"
+    text: "Locate your server PC's local IP address (e.g., 192.168.1.50)."
+  - name: "Log into your router"
+    text: "Open the router admin panel and find Port Forwarding."
+  - name: "Create a port rule"
+    text: "Forward TCP port 25565 to your server's local IP."
+  - name: "Allow the firewall"
+    text: "Permit Minecraft/Java through your OS firewall."
+  - name: "Test the connection"
+    text: "Ask a friend to connect using your public IP."
+---
+
+## Step 1: Find Your Local IP
+
+On Windows, run:
+
+```bash
+ipconfig
+```
+
+On Mac/Linux, run:
+
+```bash
+ifconfig
+```
+
+Look for an address like `192.168.x.x` or `10.x.x.x`.
+
+## Step 2: Log Into Your Router
+
+Open your router's admin page in a browser (often `192.168.0.1` or `192.168.1.1`). Log in with your router credentials.
+
+## Step 3: Add a Port Forward Rule
+
+Create a new rule with these settings:
+
+- **Protocol:** TCP
+- **External Port:** 25565
+- **Internal Port:** 25565
+- **Internal IP:** Your server PC local IP
+
+## Step 4: Allow Your Firewall
+
+Make sure the Minecraft server is allowed in your firewall settings.
+
+Windows example:
+
+```bash
+netsh advfirewall firewall add rule name="Minecraft" dir=in action=allow protocol=TCP localport=25565
+```
+
+## Step 5: Test the Connection
+
+Give your public IP address to a friend and have them connect.
+
+<CalloutBox type="info" title="Finding Your Public IP">
+Search for "what is my IP" in your browser, or check your router status page.
+</CalloutBox>
+
+## If It Still Doesn't Work
+
+- Your ISP may block ports or use CGNAT
+- Your firewall might still be blocking Java
+- The server might not be running
+
+See [Fix Connection Timed Out](/guides/fix-connection-timed-out) for a full troubleshooting checklist.

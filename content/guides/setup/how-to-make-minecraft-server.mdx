@@ -1,0 +1,93 @@
+---
+title: "How to Make a Minecraft Server (2026 Guide)"
+description: "Create a Minecraft server on your PC or VPS. Choose the right server software, install Java, configure settings, and invite friends."
+publishedAt: "2025-12-28"
+author: "mcserverjars"
+category: "setup"
+tags: ["minecraft server", "setup", "paper", "java", "beginner"]
+schemaType: "HowTo"
+howToSteps:
+  - name: "Choose server software"
+    text: "Pick Paper for plugins, Fabric/Forge for mods, or Vanilla for a pure experience."
+  - name: "Install Java"
+    text: "Install Java 21 for Minecraft 1.20.5+ or Java 17 for older versions."
+  - name: "Download the server jar"
+    text: "Grab the correct server jar from MCServerJars."
+  - name: "Create a start script"
+    text: "Create a start.bat or start.sh with proper RAM flags."
+  - name: "Accept the EULA"
+    text: "Set eula=true in eula.txt."
+  - name: "Configure and launch"
+    text: "Edit server.properties and start the server."
+  - name: "Open the server to friends"
+    text: "Port forward TCP 25565 and allow your firewall."
+---
+
+## 1. Choose the Right Server Software
+
+Your server software affects performance and what you can install.
+
+| Server Type | Best For | Notes |
+| --- | --- | --- |
+| [Paper](/paper) | Most servers | Best performance + plugin support |
+| [Vanilla](/vanilla) | Pure Minecraft | Official experience, fewer optimizations |
+| [Fabric](/fabric) | Lightweight mods | Fast updates and performance mods |
+| [Forge](/forge) | Large modpacks | Biggest mod ecosystem |
+
+If you are new, start with Paper. It is fast, stable, and has the best plugin ecosystem.
+
+## 2. Install Java
+
+Minecraft servers run on Java. Use Java 21 for Minecraft 1.20.5+ and Java 17 for 1.18-1.20.4.
+
+Verify your installation:
+
+```bash
+java -version
+```
+
+## 3. Download the Server Jar
+
+<DownloadButton project="paper" label="Download Paper" />
+
+Want a different type? Browse [all server jars](/).
+
+## 4. Create a Start Script
+
+Create a `start.bat` (Windows) or `start.sh` (Mac/Linux) file:
+
+```bash
+java -Xms4G -Xmx4G -jar server.jar --nogui
+```
+
+<CalloutBox type="tip" title="Optimize Startup Flags">
+Use the [Startup Flags Generator](/guides/startup-flags-generator) for tuned JVM flags.
+</CalloutBox>
+
+## 5. Accept the EULA
+
+Run the server once. Then open `eula.txt` and change `eula=false` to `eula=true`.
+
+## 6. Configure server.properties
+
+Edit settings like view distance, max players, and game mode.
+
+<CalloutBox type="info" title="Need a clean config?">
+Use the [server.properties generator](/guides/server-properties-generator) to build a fresh file.
+</CalloutBox>
+
+## 7. Let Friends Join (Port Forwarding)
+
+To allow external players to join:
+
+1. Log into your router
+2. Forward TCP port `25565` to your server PC
+3. Allow Minecraft through your firewall
+
+Full guide: [How to Port Forward a Minecraft Server](/guides/how-to-port-forward-minecraft-server)
+
+## Next Steps
+
+- Install plugins with Spigot: [How to install Spigot](/guides/how-to-install-spigot)
+- Switch to mods: [How to install a Forge server](/guides/how-to-install-forge)
+- Reduce lag: [Optimization guide](/guides/minecraft-server-optimization)

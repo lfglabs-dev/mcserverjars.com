@@ -15,7 +15,14 @@ import {
   CATEGORY_LABELS,
 } from "@/lib/guides";
 import { generateGuideSchema } from "@/lib/guides/schema";
-import { CalloutBox, CodeBlock, DownloadButton, StartupFlagsGenerator } from "@/app/components/mdx";
+import {
+  CalloutBox,
+  CodeBlock,
+  DownloadButton,
+  StartupFlagsGenerator,
+  ServerPropertiesGenerator,
+  RamCalculator,
+} from "@/app/components/mdx";
 import Link from "next/link";
 import { RiUserLine, RiArrowRightLine } from "@remixicon/react";
 
@@ -68,6 +75,8 @@ const mdxComponents = {
   CodeBlock,
   DownloadButton,
   StartupFlagsGenerator,
+  ServerPropertiesGenerator,
+  RamCalculator,
   a: ({
     href,
     children,

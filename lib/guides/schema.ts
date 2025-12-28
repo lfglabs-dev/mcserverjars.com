@@ -1,5 +1,5 @@
 import { siteConfig } from "@/app/siteConfig";
-import type { Guide, Author } from "./types";
+import type { Guide } from "./types";
 import { getAuthorBySlug } from "./index";
 
 interface ArticleSchema {

@@ -1,0 +1,60 @@
+---
+title: "How to Install a Forge Minecraft Server"
+description: "Set up a Forge server for modded Minecraft. Download Forge, generate the server files, and install mods safely."
+publishedAt: "2025-12-28"
+author: "mcserverjars"
+category: "setup"
+tags: ["forge", "mods", "modded", "setup"]
+schemaType: "HowTo"
+howToSteps:
+  - name: "Install Java"
+    text: "Install Java 21 for Minecraft 1.20.5+ or Java 17 for older versions."
+  - name: "Download Forge"
+    text: "Get the Forge server jar or installer for your Minecraft version."
+  - name: "Generate server files"
+    text: "Run the Forge installer or server jar to create the Forge libraries."
+  - name: "Accept the EULA"
+    text: "Set eula=true in eula.txt."
+  - name: "Install mods"
+    text: "Place mod jars into the mods folder and restart the server."
+---
+
+## Step 1: Download Forge
+
+<DownloadButton project="forge" label="Download Forge" />
+
+Forge is ideal for large modpacks and heavy modding. Make sure you download a Forge build that matches your Minecraft version.
+
+## Step 2: Generate Forge Server Files
+
+If you are using the Forge installer, run:
+
+```bash
+java -jar forge-installer.jar --installServer
+```
+
+This creates the Forge server libraries and a `run.bat`/`run.sh` file.
+
+If you downloaded a server jar directly, run it once to generate the folder structure.
+
+## Step 3: Start the Server
+
+Use the generated `run.bat`/`run.sh`, or create your own start script:
+
+```bash
+java -Xms6G -Xmx6G -jar server.jar --nogui
+```
+
+## Step 4: Install Mods
+
+1. Place mod `.jar` files in the `mods` folder
+2. Restart the server
+3. Install the same mods on your client
+
+<CalloutBox type="warning" title="Client Mods Required">
+Players must install the exact same Forge mods and versions to join your server.
+</CalloutBox>
+
+## Forge vs Fabric
+
+Forge supports the largest mod library, while Fabric focuses on lightweight, fast-updating mods. Compare them in [Fabric vs Forge](/guides/fabric-vs-forge).

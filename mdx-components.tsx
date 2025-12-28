@@ -1,6 +1,13 @@
 import type { MDXComponents } from "mdx/types";
 import Link from "next/link";
-import { CalloutBox, CodeBlock, DownloadButton, StartupFlagsGenerator } from "@/app/components/mdx";
+import {
+  CalloutBox,
+  CodeBlock,
+  DownloadButton,
+  StartupFlagsGenerator,
+  ServerPropertiesGenerator,
+  RamCalculator,
+} from "@/app/components/mdx";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -72,6 +79,8 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     CalloutBox,
     DownloadButton,
     StartupFlagsGenerator,
+    ServerPropertiesGenerator,
+    RamCalculator,
 
     // Spread any additional components passed in
     ...components,

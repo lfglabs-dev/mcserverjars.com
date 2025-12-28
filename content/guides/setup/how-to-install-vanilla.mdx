@@ -1,0 +1,68 @@
+---
+title: "How to Install a Vanilla Minecraft Server"
+description: "Set up the official Vanilla Minecraft server jar in minutes. Learn how to download, run, and configure a pure Minecraft server."
+publishedAt: "2025-12-28"
+author: "mcserverjars"
+category: "setup"
+tags: ["vanilla", "setup", "official", "minecraft server"]
+schemaType: "HowTo"
+howToSteps:
+  - name: "Install Java"
+    text: "Install Java 21 for Minecraft 1.20.5+ or Java 17 for older versions."
+  - name: "Download the Vanilla server jar"
+    text: "Get the official server jar from MCServerJars."
+  - name: "Create a server folder"
+    text: "Place the jar in a dedicated folder for your server files."
+  - name: "Run the server"
+    text: "Start the jar once to generate config files."
+  - name: "Accept the EULA"
+    text: "Set eula=true in eula.txt."
+  - name: "Configure and launch"
+    text: "Edit server.properties, then start the server again."
+---
+
+## Requirements
+
+- Java 21+ (Minecraft 1.20.5+)
+- 2GB RAM minimum (4GB recommended)
+- Stable internet connection
+
+## Step 1: Download Vanilla
+
+<DownloadButton project="vanilla" label="Download Vanilla Server" />
+
+Pick your Minecraft version and download the latest build.
+
+## Step 2: Create a Server Folder
+
+Create a folder such as `minecraft-vanilla` and place the jar inside it. Rename it to `server.jar` for simplicity.
+
+## Step 3: Run the Server
+
+Create a start script:
+
+```bash
+java -Xms2G -Xmx2G -jar server.jar --nogui
+```
+
+Run it once to generate configuration files.
+
+## Step 4: Accept the EULA
+
+Open `eula.txt` and set `eula=true`.
+
+## Step 5: Configure server.properties
+
+Adjust settings like `motd`, `max-players`, and `difficulty`.
+
+<CalloutBox type="tip">
+Use the [server.properties generator](/guides/server-properties-generator) to build a clean config file.
+</CalloutBox>
+
+## Step 6: Open the Server to Friends
+
+If players outside your network need to join, follow our [port forwarding guide](/guides/how-to-port-forward-minecraft-server).
+
+## Vanilla vs Paper
+
+Vanilla is stable and simple, but it lacks performance optimizations and plugin support. If you want a faster server with plugins, consider [Paper](/paper).

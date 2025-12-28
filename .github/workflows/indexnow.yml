@@ -1,0 +1,21 @@
+name: IndexNow Submit Sitemap
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  submit-sitemap:
+    name: Submit URLs to IndexNow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit sitemap to IndexNow
+        uses: jakob-bagterp/index-now-submit-sitemap-urls-action@v1
+        with:
+          host: "mcserverjars.com"
+          api_key: ${{ secrets.INDEX_NOW_API_KEY }}
+          api_key_location: "https://mcserverjars.com/${{ secrets.INDEX_NOW_API_KEY }}.txt"
+          sitemap_locations: |
+            https://mcserverjars.com/sitemap.xml
+          endpoint: bing

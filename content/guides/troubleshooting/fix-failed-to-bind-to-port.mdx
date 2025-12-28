@@ -1,0 +1,57 @@
+---
+title: "Fix 'Failed to Bind to Port' in Minecraft Server"
+description: "Resolve the 'Failed to bind to port' or 'Address already in use' error when starting a Minecraft server."
+publishedAt: "2025-12-28"
+author: "mcserverjars"
+category: "troubleshooting"
+tags: ["failed to bind to port", "address already in use", "troubleshooting", "server start"]
+schemaType: "FAQPage"
+faqItems:
+  - question: "What causes 'Failed to bind to port'?"
+    answer: "Another application is already using the port (usually 25565), or a previous server instance is still running."
+  - question: "How do I free up port 25565?"
+    answer: "Stop the other process using the port, or reboot the machine."
+  - question: "Can I change the server port?"
+    answer: "Yes. Edit server.properties and set server-port to a different number (like 25566)."
+---
+
+## Step 1: Check for Another Server Instance
+
+Make sure there is no other Minecraft server already running on the same machine.
+
+## Step 2: Find the Process Using the Port
+
+Windows:
+
+```bash
+netstat -ano | findstr :25565
+```
+
+Mac/Linux:
+
+```bash
+lsof -iTCP:25565 -sTCP:LISTEN
+```
+
+Stop the process that is already using the port.
+
+## Step 3: Change the Port (Optional)
+
+Edit `server.properties`:
+
+```properties
+server-port=25566
+```
+
+<CalloutBox type="tip" title="Need a fresh config?">
+Generate a new `server.properties` file with our [server.properties generator](/guides/server-properties-generator).
+</CalloutBox>
+
+## Step 4: Restart the Server
+
+After freeing the port or changing it, start the server again.
+
+## Related Help
+
+- [Common Server Errors](/guides/common-server-errors)
+- [Fix Connection Timed Out](/guides/fix-connection-timed-out)

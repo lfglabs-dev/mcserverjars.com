@@ -1,0 +1,31 @@
+---
+title: "Minecraft Server RAM Calculator"
+description: "Estimate how much RAM your Minecraft server needs based on player count, view distance, and plugins or mods."
+publishedAt: "2025-12-28"
+author: "mcserverjars"
+category: "tools"
+tags: ["ram", "memory", "calculator", "performance", "optimization"]
+schemaType: "Article"
+---
+
+<RamCalculator />
+
+## How to Use the Recommendation
+
+The calculator gives a starting range. Allocate the lower number first, monitor TPS and memory usage, and increase only if you see spikes or warnings.
+
+<CalloutBox type="info" title="Start Small">
+Allocating more RAM than your server needs can cause longer garbage collection pauses. Start low and increase gradually.
+</CalloutBox>
+
+## Extra Tips
+
+- Use the same value for `-Xms` and `-Xmx`
+- Leave 2GB RAM for the operating system
+- Pre-generate your world to reduce chunk generation lag
+
+## Related Guides
+
+- [Startup Flags Generator](/guides/startup-flags-generator)
+- [Complete Optimization Guide](/guides/minecraft-server-optimization)
+- [Best View Distance Settings](/guides/best-view-distance-simulation-distance)
