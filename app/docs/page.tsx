@@ -7,6 +7,9 @@ import {
   RiDownloadLine,
   RiListCheck,
 } from "@remixicon/react";
+import { siteConfig } from "../siteConfig";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "API Documentation | MCServerJars",
@@ -21,6 +24,9 @@ export const metadata: Metadata = {
     "REST API",
     "Minecraft server metadata",
   ],
+  alternates: {
+    canonical: `${siteConfig.url}/docs`,
+  },
   openGraph: {
     title: "API Documentation | MCServerJars",
     description:

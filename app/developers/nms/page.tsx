@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { NmsLookup } from "./NmsLookup";
+import { siteConfig } from "../../siteConfig";
 
 export const revalidate = 300; // 5 minutes
 
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
     "Spigot plugin NMS",
     "NMS revision mapping",
   ],
+  alternates: {
+    canonical: `${siteConfig.url}/developers/nms`,
+  },
   openGraph: {
     title: "NMS Version Mappings | Spigot & CraftBukkit Package Revisions",
     description:

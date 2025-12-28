@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { ChangelogTimeline } from "./ChangelogTimeline";
+import { siteConfig } from "../../siteConfig";
 
 export const revalidate = 300; // 5 minutes
 
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
     "resource pack changes",
     "data pack changes",
   ],
+  alternates: {
+    canonical: `${siteConfig.url}/developers/changelogs`,
+  },
   openGraph: {
     title: "Developer Changelogs | Minecraft Server Updates",
     description:

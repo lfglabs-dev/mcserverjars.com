@@ -3,6 +3,8 @@ import Link from "next/link";
 import { siteConfig } from "../../siteConfig";
 import { Breadcrumb } from "../../components/Breadcrumb";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Paper vs Spigot: Which Minecraft Server Software Should You Use?",
   description:

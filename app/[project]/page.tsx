@@ -82,6 +82,17 @@ export default async function ProjectPage({ params }: PageProps) {
     operatingSystem: "Windows, macOS, Linux",
     description: project.description,
     url: `${siteConfig.url}/${project.slug}`,
+    ...(stats.latestVersion && { softwareVersion: stats.latestVersion }),
+    author: {
+      "@type": "Organization",
+      name: "MCServerJars",
+      url: siteConfig.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "MCServerJars",
+      url: siteConfig.url,
+    },
     offers: {
       "@type": "Offer",
       price: "0",
