@@ -123,3 +123,12 @@ GET /v1/projects/:slug/versions/:version/latest  # Get latest build
 
 Copyright © Thomas Marchand. All rights reserved.
 
+---
+
+<p align="center">
+  <sub>Created by <a href="https://thomas.md">Th0rgal</a> • Also check out <a href="https://hackedserver.org">HackedServer</a> and <a href="https://asyncanticheat.com">Async AntiCheat</a></sub>
+</p>
+
+### Keywords
+
+minecraft server jar, paper server download, spigot download, minecraft vanilla server, fabric server, forge server, purpur download, velocity proxy, bungeecord download, minecraft server software, paper 1.21, spigot 1.21, minecraft server hosting, craftbukkit download, pufferfish server, folia download, neoforge server, mohist server, arclight server, sponge server, waterfall proxy, minecraft java server
