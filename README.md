@@ -180,7 +180,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ## Deployment
 
 - **Frontend**: Vercel (auto-deploy from GitHub)
-- **API**: Hetzner VPS via SSH (see `.cursor/rules/deployment.mdc`)
+- **API**: Hetzner VPS via SSH
 - **Indexers**: GitHub Actions (cron every 30 minutes)
 
 ## License
