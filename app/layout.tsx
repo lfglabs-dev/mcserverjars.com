@@ -4,6 +4,7 @@ import "./globals.css";
 import { siteConfig } from "./siteConfig";
 import { Navigation } from "./components/Navbar";
 import { Footer } from "./components/Footer";
+import { GoogleAnalytics } from "./components/GoogleAnalytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -79,6 +80,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
